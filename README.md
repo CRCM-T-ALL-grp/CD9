@@ -22,9 +22,9 @@ The bio-informatic analysis are divided in 2 part :
 All the code are available in this github repository. Required data and builded Docker images are available respectively in GEO and Zenodo. Instructions to reproduce the analysis are provided in the different subdirectories:
 
 - scRNAseq
-	- Seurat preprocessing and analysis of the mice is described in the scRNAseq folder : [scRNAseq](scRNAseq/README.md)
+	- Seurat preprocessing and analysis of the mice is described in the scRNAseq folder : [scRNAseq](scRNAseq/)
 - bulkRNAseq
-	- Preprocesing and analysis of the PDX and Jurkat cells are described in the bulkRNAseq folder : [bulkRNAseq](bulkRNAseq/README.md)
+	- Preprocesing and analysis of the PDX and Jurkat cells are described in the bulkRNAseq folder : [bulkRNAseq](bulkRNAseq/)
 
 ---
 
