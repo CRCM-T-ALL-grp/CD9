@@ -1,0 +1,363 @@
+---
+title: "RNAseq"
+author: "Julien REY"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+editor_options: 
+  chunk_output_type: console
+---
+
+#####################################
+Made for docker rna_analysis
+#####################################
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r env_loading, include=FALSE}
+# Load packages, data and functions
+library(edgeR)
+library(dplyr)
+library(plotly)
+library(biomaRt)
+library(circlize)
+library(kableExtra)
+library(org.Hs.eg.db)
+library(ComplexHeatmap)
+
+WORKDIR <- "/yourWorkDir/"
+
+INPUT_PATH  <- paste0(WORKDIR, "/Data/")
+OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+
+# Set the random number seed
+set.seed(1234)
+```
+
+# Data loading
+
+```{r}
+counts <- read.table(file = paste0(INPUT_PATH, "counts.txt"), header = TRUE, sep = "\t")
+```
+
+```{r}
+#------------------------------#
+# Genome annotation PDX/jurkat #
+#------------------------------#
+if(! file.exists(paste0(OUTPUT_PATH, "data.filtered.rds"))) {
+  ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", version = 113)
+  
+  gene <- getBM(
+    attributes = c("ensembl_gene_id",
+                   "hgnc_symbol",
+                   "gene_biotype",
+                   "description",
+                   "name_1006",
+                   "namespace_1003",
+                   "chromosome_name",
+                   "start_position",
+                   "end_position"),
+    filters = "ensembl_gene_id",
+    values = counts$gene_id,
+    mart = ensembl)
+  
+  gene$namespace_1003 <- dplyr::case_when(
+    gene$namespace_1003 == "molecular_function" ~ "MF",
+    gene$namespace_1003 == "biological_process" ~ "BP",
+    gene$namespace_1003 == "cellular_component" ~ "CC",
+    TRUE ~ gene$namespace_1003)
+  
+  gene.unique <- gene %>%
+    group_by(ensembl_gene_id,
+             hgnc_symbol,
+             gene_biotype,
+             description,
+             chromosome_name,
+             start_position,
+             end_position) %>%
+    summarise(
+      go_terms = paste(
+        paste0(name_1006, " (", namespace_1003, ")")[name_1006 != ""],
+        collapse = ", "),
+      .groups = "drop")
+  
+  # Store all the informations
+  data <- counts %>%
+    left_join(gene.unique,
+              by = c("gene_id" = "ensembl_gene_id"), keep = FALSE)
+  
+  data$hgnc_symbol <- ifelse(is.na(data$hgnc_symbol) | data$hgnc_symbol == "", paste0("unknown_", rownames(data)), data$hgnc_symbol)
+  
+  # Filter based on chromosomes
+  main_chrom <- c(as.character(1:22), "X", "Y")
+  data.filtered <- data[data$chromosome_name %in% main_chrom, ]
+  rownames(data.filtered) <- NULL
+  
+  saveRDS(data.filtered, file = paste0(OUTPUT_PATH, "data.filtered.rds"))
+  
+} else {
+  data.filtered <- readRDS(file = paste0(OUTPUT_PATH, "data.filtered.rds"))
+}
+
+# To add gene name
+counts <- data.filtered[, c("hgnc_symbol", colnames(counts)[c(3:ncol(counts))])]
+names(counts) <- c("gene_id", names(counts[, 2:ncol(counts)]))
+```
+
+# Analysis
+
+```{r}
+tresh_logFC <- 0.5
+tresh_padj <- 1e-5
+```
+
+```{r}
+group <- factor(c("PDX52_9Neg", "PDX52_9Neg", "PDX52_9Pos", "PDX52_9Pos", "PDX53_9Neg", "PDX53_9Neg", "PDX53_9Pos", "PDX53_9Pos", "jkt_9Neg", "jkt_9Neg", "jkt_9Pos", "jkt_9Pos"))
+
+# Create edgeR object
+y <- DGEList(counts = counts, group = group)
+
+# Filtering low number of counts
+keep <- filterByExpr(y)
+y <- y[keep,,keep.lib.sizes=FALSE]
+
+# Normalisation
+y <- normLibSizes(y)
+
+cpm_norm <- cpm(y, normalized.lib.sizes = TRUE)
+cpm_norm <- round(cpm_norm, 2)
+
+df.norm_cpm <- data.frame(
+  gene = y$genes,
+  cpm_norm)
+
+logcpm_norm <- cpm(y, log = TRUE, normalized.lib.sizes = TRUE)
+logcpm_norm <- round(logcpm_norm, 2)
+
+df.logcpm_norm <- data.frame(
+  gene = y$genes,
+  logcpm_norm)
+
+# write.table(df.norm_cpm, file = paste0(OUTPUT_PATH, "norm_cpm_counts.csv"), quote = FALSE, sep = "\t", row.names = FALSE)
+
+design <- model.matrix(~0+group, data=y$samples)
+
+y <- estimateDisp(y, design)
+
+fit <- glmQLFit(y, design)
+
+# saveRDS(fit, file = paste0(OUTPUT_PATH, "edgeR_fit.Rds"))
+```
+
+```{r}
+# Jurkat
+qlf <- glmQLFTest(fit, contrast = c(-1, 1, 0, 0, 0, 0))
+
+markers.vs <- topTags(qlf, n = Inf, p.value = 0.05)
+markers.vs <- markers.vs$table
+markers.vs <- arrange(markers.vs, FDR)
+markers.vs <- unique(markers.vs)
+markers.vs.jkt <- markers.vs
+
+markers.vs.jkt.filtered <- markers.vs %>% dplyr::filter(FDR < tresh_padj) %>% dplyr::filter(abs(logFC) > tresh_logFC)
+```
+
+```{r}
+# PDX52
+qlf <- glmQLFTest(fit, contrast = c(0, 0, -1, 1, 0, 0))
+
+markers.vs <- topTags(qlf, n = Inf, p.value = 0.05)
+markers.vs <- markers.vs$table
+markers.vs <- arrange(markers.vs, FDR)
+markers.vs <- unique(markers.vs)
+markers.vs.pdx52 <- markers.vs
+
+markers.vs.pdx52.filtered <- markers.vs %>% dplyr::filter(FDR < tresh_padj) %>% dplyr::filter(abs(logFC) > tresh_logFC)
+```
+
+```{r}
+# PDX53
+qlf <- glmQLFTest(fit, contrast = c(0, 0, 0, 0, -1, 1))
+
+markers.vs <- topTags(qlf, n = Inf, p.value = 0.05)
+markers.vs <- markers.vs$table
+markers.vs <- arrange(markers.vs, FDR)
+markers.vs <- unique(markers.vs)
+markers.vs.pdx53 <- markers.vs
+
+markers.vs.pdx53.filtered <- markers.vs %>% dplyr::filter(FDR < tresh_padj) %>% dplyr::filter(abs(logFC) > tresh_logFC)
+```
+
+# Intersect PDX52 n PDX53 n Jurkat
+
+```{r}
+markers_filtered_list <- list(PDX52 = markers.vs.pdx52.filtered,
+                              PDX53 = markers.vs.pdx53.filtered,
+                              Jurkat = markers.vs.jkt.filtered)
+
+
+# To intersect and keep genes with the same sign of logFC
+gene_intersect <- Reduce(intersect,
+                         lapply(markers_filtered_list, function(x) unique(x$gene_id))
+                         )
+
+gene_same_logFC <- c()
+gene_non_sense  <- c()
+
+for (gene in gene_intersect) {
+  
+  logFC_values <- sapply(markers_filtered_list, function(df) {
+    vals <- df$logFC[df$gene_id == gene]
+    
+    if (length(vals) > 1 && (all(vals > 0) || all(vals < 0))) {
+      return(vals[1])
+    }
+    if (length(vals) == 1) {
+      return(vals)
+    }
+    return(NA)
+  })
+  
+  if (any(is.na(logFC_values))) {
+    gene_non_sense <- c(gene_non_sense, gene)
+    next
+  }
+  
+  if (all(logFC_values > 0) || all(logFC_values < 0)) {
+    gene_same_logFC <- c(gene_same_logFC, gene)
+  } else {
+    gene_non_sense <- c(gene_non_sense, gene)
+  }
+}
+```
+
+# Heatmap
+
+```{r}
+# genes organisation for the heatmap
+gene_list_vert1 <- c("CPXM1", "TRO", "ITGA5", "MEGF6", "PLXNB1", "LTBP3", "CLEC11A", "AGER")
+gene_list_vert2 <- c("TBC1D10C", "MYO15B", "MICAL1", "RHPN1", "MAPK8IP3", "RASAL3", "ACAP1", "TPM2")
+gene_list_orange <- c("ABCA7", "CAPS", "DENND1C", "SLC25A29", "SLC23A1", "AP1G2")
+gene_list_blue <- c("PHF1", "ZNF266", "HDAC6", "SAP25", "MXD3", "ASXL1", "RFX8")
+gene_list_others <- c("FADS3", "AKAP8L", "PGGHG", "ATG16L2", "SPPL2B", "PCED1A", "POMT1", "DDAH2", "ANKZF1", "TPT1-AS1", "PABPC1L", "SAPCD1", "NPIPB3", "FAM193B", "LINC01237", "CDK5RAP3", "CD300A", "SPSB3", "CIAO3", "RAD9A", "NPIPB5", "CCNL2", "GSDMB", "NARF", "TNFAIP2", "AMY2B")
+
+gene_list <- c(gene_list_vert1, gene_list_vert2, gene_list_orange, gene_list_blue, gene_list_others)
+```
+
+```{r, fig.width = 8.3, fig.height = 10}
+# Data organisation and scale
+df.logcpm_norm.filter <- df.logcpm_norm[c(1, 2, 3, 6, 7, 10, 11, 4, 5, 8, 9, 12, 13)]
+df.logcpm_norm.filter <- df.logcpm_norm.filter[match(gene_list, df.logcpm_norm.filter$gene_id), ]
+
+names <- df.logcpm_norm.filter$gene_id
+df.logcpm_norm.filter$gene_id <- NULL
+rownames(df.logcpm_norm.filter) <- names
+
+df.pdx52 <- df.logcpm_norm.filter[, c(1, 2, 7, 8)]
+df.pdx53 <- df.logcpm_norm.filter[, c(3, 4, 9, 10)]
+df.jkt <- df.logcpm_norm.filter[, c(5, 6, 11, 12)]
+
+df.scaled.pdx52 <- t(scale(t(df.pdx52)))
+df.scaled.pdx53 <- t(scale(t(df.pdx53)))
+df.scaled.jkt <- t(scale(t(df.jkt)))
+
+cat("Number of genes : ", dim(df.pdx52)[1])
+
+# Define same scale for the 3 heatmaps
+min_val <- min(df.scaled.pdx52, df.scaled.pdx53, df.scaled.jkt)
+max_val <- max(df.scaled.pdx52, df.scaled.pdx53, df.scaled.jkt)
+min_val_round <- floor(min_val * 10) / 10
+max_val_round <- ceiling(max_val * 10) / 10
+col_fun <- colorRamp2(c(min_val_round, 0, max_val_round), c("blue", "white", "red"))
+breaks <- list(at = c(min_val_round, 0, max_val_round))
+
+# Generate heatmaps
+pHeatmap.pdx52 <- ComplexHeatmap::Heatmap(df.scaled.pdx52,
+                                      col = col_fun,
+                                      name = "Scaled expression",
+                                      show_column_names = FALSE,
+                                      cluster_columns = FALSE,
+                                      cluster_rows = FALSE,
+                                      column_names_side = "top",
+                                      show_row_dend = FALSE,
+                                      # top_annotation = column_annotation,
+                                      show_heatmap_legend = TRUE,
+                                      heatmap_legend_param = breaks,
+                                      column_title = "PDX52")
+
+pHeatmap.pdx53 <- ComplexHeatmap::Heatmap(df.scaled.pdx53,
+                                      col = col_fun,
+                                      name = "Scaled expression",
+                                      show_column_names = FALSE,
+                                      cluster_columns = FALSE,
+                                      cluster_rows = FALSE,
+                                      column_names_side = "top",
+                                      show_row_dend = FALSE,
+                                      # top_annotation = column_annotation,
+                                      show_heatmap_legend = FALSE,
+                                      heatmap_legend_param = breaks,
+                                      column_title = "PDX53")
+
+pHeatmap.jkt <- ComplexHeatmap::Heatmap(df.scaled.jkt,
+                                      col = col_fun,
+                                      name = "Scaled expression",
+                                      show_column_names = FALSE,
+                                      cluster_columns = FALSE,
+                                      cluster_rows = FALSE,
+                                      column_names_side = "top",
+                                      show_row_dend = FALSE,
+                                      # top_annotation = column_annotation,
+                                      show_heatmap_legend = FALSE,
+                                      heatmap_legend_param = breaks,
+                                      column_title = "Jurkat")
+
+ht_list <- pHeatmap.pdx52 + pHeatmap.pdx53 + pHeatmap.jkt
+pHeatmap.multiple <- draw(ht_list, heatmap_legend_side = "right")
+
+
+# pdf(paste0(OUTPUT_PATH, "heatmap_pdx52.pdx53.jkt.pdf"),
+#     width = 7,
+#     height = 10
+#     )
+# draw(pHeatmap.multiple)
+# dev.off()
+```
+
+# GO
+
+```{r}
+# Function to extract GO terms from the data file
+get_gene_GO_summary <- function(data, gene, nTerms = 5, filter = FALSE) {
+  sub <- data[data$hgnc_symbol == gene, ]
+  
+  terms <- trimws(unlist(strsplit(sub$go_terms, ",")))
+
+  MF <- unique(terms[grepl("\\(MF\\)$", terms)])
+  BP <- unique(terms[grepl("\\(BP\\)$", terms)])
+  CC <- unique(terms[grepl("\\(CC\\)$", terms)])
+
+  short_GO <- function(x, nTerms) {
+    if(length(x) == 0) return(NA)
+    paste(head(x, nTerms), collapse = "; ")
+  }
+
+  list(
+    gene = gene,
+    MF = if (filter) short_GO(MF, nTerms) else paste(MF, collapse = "<br>"),
+    BP = if (filter) short_GO(BP, nTerms) else paste(BP, collapse = "<br>"),
+    CC = if (filter) short_GO(CC, nTerms) else paste(CC, collapse = "<br>"))
+}
+
+# Get gene ontology for a list of genes
+gene_summary_list <- lapply(gene_list, function(g) get_gene_GO_summary(data.filtered, g))
+
+gene_summary <- do.call(rbind, lapply(gene_summary_list, as.data.frame))
+
+table_html <- kbl(gene_summary, escape = FALSE) %>% kable_material(c("striped", "hover", "condensed"))
+
+# save_kable(table_html, paste0(OUTPUT_PATH, "gene_summary_table.html"))
+```
+
