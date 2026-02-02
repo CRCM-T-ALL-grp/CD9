@@ -50,6 +50,5 @@ docker load --input $WORKING_DIR/Container/rna_analysis.tar
 ```bash
 docker run -d --name rna_analysis -p 9090:8787 -v $WORKING_DIR:/workspace rna_analysis
 ```
-Once the container is running, the analysis environment can be accessed through a web browser:
-
+Once the container is running, the analysis environment can be accessed through a web browser:  
 http://localhost:9090/
