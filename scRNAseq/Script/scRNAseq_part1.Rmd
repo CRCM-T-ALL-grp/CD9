@@ -1,0 +1,419 @@
+---
+title: "scRNAseq"
+author: "Julien REY"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(Seurat)
+library(ggplot2)
+library(ggrepel)
+library(biomaRt)
+library(remotes)
+
+
+WORKDIR <- "/yourWorkDir/"
+
+INPUT_PATH  <- paste0(WORKDIR, "/Data/")
+OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+
+# Set the random number seed
+seed=1234
+```
+
+# PATH
+
+```{r, include=FALSE}
+PATH_MOUSE_DATA1904 <- paste0(INPUT_PATH, "mm10_1904/")
+PATH_MOUSE_DATA1902 <- paste0(INPUT_PATH, "mm10_1902/")
+PATH_MOUSE_DATA1810 <- paste0(INPUT_PATH, "mm10_1810/")
+
+PATH_HTO_DATA1904 <- paste0(INPUT_PATH, "CITEseq_HTO_1904/")
+PATH_HTO_DATA1902 <- paste0(INPUT_PATH, "CITEseq_HTO_1902/")
+PATH_HTO_DATA1810 <- paste0(INPUT_PATH, "CITEseq_HTO_1810/")
+
+PATH_ADT_DATA1904 <- paste0(INPUT_PATH, "CITEseq_ADT_1904/")
+PATH_ADT_DATA1902 <- paste0(INPUT_PATH, "CITEseq_ADT_1902/")
+```
+
+#Create Seurat object
+
+## 1810
+
+```{r}
+# Load UMI
+mousedata1810 <- Read10X(data.dir = PATH_MOUSE_DATA1810, strip.suffix = TRUE)
+d_1810 <- CreateSeuratObject(counts = mousedata1810, project = "181031",min.cells = 3, min.features = 150)
+umis1810 <- GetAssayData(object = d_1810, layer = "counts")
+
+
+# Loade HTO
+raw.hto1810 <- Read10X(PATH_HTO_DATA1810, gene.column = 1)
+hto1810 <- raw.hto1810[c(1:8),]
+# Select cell barcodes detected by both RNA and HTO
+joint.bcs1810 <- intersect(x=colnames(x= umis1810),y= colnames(x = hto1810))
+# Subset RNA and HTO counts by joint cell barcodes
+umis1810 <- umis1810[,joint.bcs1810]
+hto1810 <- as.matrix(x= hto1810[,joint.bcs1810])
+
+
+# Create seurat object
+data_1810 <- CreateSeuratObject(counts = umis1810, assay = "RNA", project = "181031")
+
+data_1810 <- NormalizeData(data_1810,display.progress = FALSE)
+data_1810 <- FindVariableFeatures(data_1810,do.plot = F,display.progress = FALSE)
+data_1810 <- ScaleData(data_1810,display.progress = FALSE)
+
+data_1810[["HTO"]] <- CreateAssayObject(counts = hto1810)
+data_1810 <- NormalizeData(object = data_1810, assay = "HTO", normalization.method = "CLR")
+
+# Demultiplex cells based on HTO
+data_1810 <- HTODemux(data_1810, assay="HTO", kfunc = "clara", positive.quantile = 0.99)
+```
+
+## 1902
+
+```{r}
+# Load UMI
+mousedata1902 <- Read10X(data.dir = PATH_MOUSE_DATA1902, strip.suffix = TRUE)
+d_1902 <- CreateSeuratObject(counts = mousedata1902, project = "190211",min.cells = 3, min.features = 150)
+umis1902 <- GetAssayData(object = d_1902, layer = "counts")
+
+
+
+# Load HTO
+raw.hto1902 <- Read10X(PATH_HTO_DATA1902, gene.column = 1)
+hto1902 <- raw.hto1902[c(1:8),]
+# Select cell barcodes detected by both RNA and HTO
+joint.bcs1902 <- intersect(x=colnames(x= umis1902),y= colnames(x = hto1902))
+# Subset RNA and HTO counts by joint cell barcodes
+umis1902 <- umis1902[,joint.bcs1902]
+hto1902 <- as.matrix(x= hto1902[,joint.bcs1902])
+
+
+
+# Create seurat object
+data_1902 <- CreateSeuratObject(counts = umis1902, assay = "RNA", project = "190211")
+
+data_1902 <- NormalizeData(data_1902,display.progress = FALSE)
+data_1902 <- FindVariableFeatures(data_1902,do.plot = F,display.progress = FALSE)
+data_1902 <- ScaleData(data_1902,display.progress = FALSE)
+
+data_1902[["HTO"]] <- CreateAssayObject(counts = hto1902)
+data_1902 <- NormalizeData(object = data_1902, assay = "HTO", normalization.method = "CLR")
+
+
+
+# Demultiplex cells based on HTO
+data_1902 <- HTODemux(data_1902, assay="HTO", kfunc = "clara", positive.quantile = 0.99)
+
+# Group cells based on the max HTO signal
+Idents(data_1902) <- "HTO_maxID"
+
+
+#Load ADT
+raw.ADT1902 <- Read10X(PATH_ADT_DATA1902, gene.column = 1)
+ADT1902 <- raw.ADT1902[c(1:6),]
+
+umis1902 <- GetAssayData(object =data_1902, slot = "counts")
+
+# Create an empty matrix containing NAs
+Cell.list <- colnames(GetAssayData(object = data_1902[["RNA"]], slot = "data" ) )
+ADT.list <- c(unique(rownames(ADT1902)))
+mat.adt <- matrix(nrow = length(ADT.list), ncol = length(Cell.list))
+rownames(mat.adt) = ADT.list
+colnames(mat.adt) = Cell.list
+
+# Get cell barcodes detected by both RNA and ADT
+joint_bcs <- intersect(colnames(umis1902),colnames(ADT1902))
+ADT1902 <- as.matrix(ADT1902[,joint_bcs])
+
+mat.adt[,joint_bcs]<-ADT1902[,joint_bcs]
+
+# Add ADT data as a new assay
+data_1902[["ADT"]] <- CreateAssayObject(counts = mat.adt[,colnames(data_1902)])
+data_1902 <- NormalizeData(data_1902, assay = "ADT", normalization.method = "CLR")
+data_1902 <- ScaleData(data_1902, assay = "ADT")
+```
+
+## 1904
+
+```{r}
+# Load the UMI
+mousedata1904 <- Read10X(data.dir = PATH_MOUSE_DATA1904, strip.suffix = TRUE)
+d_1904 <- CreateSeuratObject(counts = mousedata1904, project = "190408",min.cells = 3, min.features = 150)
+umis1904 <- GetAssayData(object = d_1904, layer = "counts")
+
+
+
+# Load the HTO
+raw.hto1904 <- Read10X(PATH_HTO_DATA1904, gene.column = 1)
+hto1904 <- raw.hto1904[c(1:6),]
+# Select cell barcodes detected by both RNA and HTO
+joint.bcs1904 <- intersect(x=colnames(x= umis1904),y= colnames(x = hto1904))
+# Subset RNA and HTO counts by joint cell barcodes
+umis1904 <- umis1904[, joint.bcs1904]
+hto1904 <- as.matrix(x= hto1904[, joint.bcs1904])
+
+
+# Create seurat object
+data_1904 <- CreateSeuratObject(counts = umis1904, assay = "RNA",project = "190408")
+
+data_1904 <- NormalizeData(data_1904,display.progress = FALSE)
+data_1904 <- FindVariableFeatures(data_1904,do.plot = F,display.progress = FALSE)
+data_1904 <- ScaleData(data_1904,display.progress = FALSE)
+
+data_1904[["HTO"]] <- CreateAssayObject(counts = hto1904)
+data_1904 <- NormalizeData(object = data_1904, assay = "HTO", normalization.method = "CLR")
+
+
+# Demultiplex cells based on HTO
+data_1904 <- HTODemux(data_1904, assay = "HTO", kfunc = "clara", positive.quantile = 0.99)
+
+# Group cells based on the max HTO signal
+Idents(data_1904) <- "HTO_maxID"
+
+
+# Load ADT
+raw.ADT1904 <- Read10X(PATH_ADT_DATA1904, gene.column = 1)
+ADT1904 <- raw.ADT1904[c(1:6),]
+
+umis1904 <- GetAssayData(object =data_1904, slot = "counts")
+
+# Create an empty matrix containing NAs
+Cell.list <- colnames(GetAssayData(object = data_1904[["RNA"]], slot = "data" ) )
+ADT.list <- c(unique(rownames(ADT1904)))
+mat.adt <- matrix(nrow = length(ADT.list), ncol = length(Cell.list))
+rownames(mat.adt) = ADT.list
+colnames(mat.adt) = Cell.list
+
+# Get cell barcodes detected by both RNA and ADT
+joint_bcs <- intersect(colnames(umis1904),colnames(ADT1904))
+ADT1904 <- as.matrix(ADT1904[,joint_bcs])
+
+mat.adt[,joint_bcs]<-ADT1904[,joint_bcs]
+
+# Add ADT data as a new assay
+data_1904[["ADT"]] <- CreateAssayObject(counts = mat.adt[,colnames(data_1904)])
+data_1904 <- NormalizeData(data_1904, assay = "ADT", normalization.method = "CLR")
+data_1904 <- ScaleData(data_1904, assay = "ADT")
+```
+
+# Cleaning
+
+```{r}
+Idents(data_1810) <- "hash.ID"
+data_1810 <- subset(data_1810, idents = c("Negative","Doublet"), invert = TRUE)
+
+Idents(data_1902) <- "hash.ID"
+data_1902 <- subset(data_1902, idents = c("Negative","Doublet"), invert = TRUE)
+
+Idents(data_1904) <- "hash.ID"
+data_1904 <- subset(data_1904, idents = c("Negative","Doublet","Diag-GGTTGCCAGATGTCA","Relapse-TGTCTTTCCTGCCAG"), invert = TRUE)
+
+clean.subset1902 <- data_1902
+clean.subset1904 <- data_1904
+clean.subset1810 <- data_1810
+
+# saveRDS(clean.subset1902, file = paste0(OUTPUT_PATH, "clean.subset1902_2023.RData"))
+# saveRDS(clean.subset1904, file = paste0(OUTPUT_PATH, "clean.subset1904_2023.RData"))
+# saveRDS(clean.subset1810, file = paste0(OUTPUT_PATH, "clean.subset1810_2023.RData"))
+```
+
+# Merge
+
+```{r}
+data.combined <- merge(x = clean.subset1810,
+                       y = c(clean.subset1902,clean.subset1904),
+                       add.cell.ids = c("20181031","20191102","20190408"),
+                       project = "Merge")
+
+data.combined <- FindVariableFeatures(object = data.combined, assay = "RNA",selection.method = "vst", nfeatures=2000)
+data.combined <- ScaleData(data.combined,assay="RNA",verbose = FALSE, do.center = TRUE)
+data.combined <- RunPCA(object = data.combined,
+                    assay = "RNA",
+                    verbose = TRUE,
+                    seed.use = 1234,
+                    npcs = 50)
+
+data.combined <- FindNeighbors(object = data.combined,
+                               dims = 1:12,
+                               verbose = FALSE,
+                               reduction = "pca")
+
+DefaultAssay(data.combined) <- "RNA"
+data.combined <- FindClusters(object = data.combined,
+                              resolution = 1,
+                              verbose = FALSE,
+                              random.seed = 1234)
+
+data.combined <- RunUMAP(object = data.combined, reduction = "pca", seed.use = 1234, dims = 1:12)
+```
+
+## Rename HTO
+
+```{r}
+HTO_cr1902 <- row.names(subset(data.combined@meta.data, hash.ID == "C-R98-CTTGCCGCATGTCAT" & orig.ident == "190211"))
+HTO_cr1810 <- row.names(subset(data.combined@meta.data, hash.ID == "C-R98-CTTGCCGCATGTCAT" & orig.ident == "181031"))
+HTO_cr1904 <- row.names(subset(data.combined@meta.data, hash.ID == "C-Rm3-CTTGCCGCATGTCAT" & orig.ident == "190408"))
+HTO_ct1904 <- row.names(subset(data.combined@meta.data, hash.ID == "C-Tm7-GAGTCTGCCAGTATC" & orig.ident == "190408"))
+
+HTO_Mr1902<- row.names(subset(data.combined@meta.data, hash.ID == "M-R95-GGTCGAGAGCATTCA" & orig.ident == "190211"))
+HTO_Mr1810<- row.names(subset(data.combined@meta.data, hash.ID == "M-R95-GGTCGAGAGCATTCA" & orig.ident == "181031"))
+HTO_Mt1902 <- row.names(subset(data.combined@meta.data, hash.ID == "M-T95-TATGCTGCCACGGTA" & orig.ident == "190211"))
+HTO_Mt1810 <- row.names(subset(data.combined@meta.data, hash.ID == "M-T95-TATGCTGCCACGGTA" & orig.ident == "181031"))
+
+HTO_Pr1902 <- row.names(subset(data.combined@meta.data, hash.ID == "P-R249-AAAGCATTCTTCACG" & orig.ident == "190211"))
+HTO_Pr1810 <- row.names(subset(data.combined@meta.data, hash.ID == "P-R249-AAAGCATTCTTCACG" & orig.ident == "181031"))
+HTO_Pr1904 <- row.names(subset(data.combined@meta.data, hash.ID == "P-Rm4-AAAGCATTCTTCACG" & orig.ident == "190408"))
+HTO_Pt1904 <- row.names(subset(data.combined@meta.data, hash.ID == "P-Tm8-TATAGAACGCCAGGC" & orig.ident == "190408"))
+HTO_Pmr1902 <-row.names(subset(data.combined@meta.data, hash.ID == "PM-R93-ACCCACCAGTAAGAC" & orig.ident == "190211"))
+HTO_Pmr1810 <-row.names(subset(data.combined@meta.data, hash.ID == "PM-R93-ACCCACCAGTAAGAC" & orig.ident == "181031"))
+HTO_Pmt1902 <-row.names(subset(data.combined@meta.data, hash.ID == "PM-T93-CTTTGTCTTTGTGAG" & orig.ident == "190211"))
+HTO_Pmt1810 <-row.names(subset(data.combined@meta.data, hash.ID == "PM-T93-CTTTGTCTTTGTGAG" & orig.ident == "181031"))
+HTO_ct1902 <- row.names(subset(data.combined@meta.data, hash.ID == "C-T98-GAGTCTGCCAGTATC" & orig.ident == "190211"))
+HTO_ct1810 <- row.names(subset(data.combined@meta.data, hash.ID == "C-T98-GAGTCTGCCAGTATC" & orig.ident == "181031"))
+HTO_Pt1902 <- row.names(subset(data.combined@meta.data, hash.ID == "P-T249-TATAGAACGCCAGGC" & orig.ident == "190211"))
+HTO_Pt1810 <- row.names(subset(data.combined@meta.data, hash.ID == "P-T249-TATAGAACGCCAGGC" & orig.ident == "181031"))
+
+data.combined@meta.data$HTO_man = "nothing"
+
+data.combined@meta.data[HTO_cr1902,]$HTO_man = "WT spleen" 
+data.combined@meta.data[HTO_cr1810,]$HTO_man = "WT spleen"
+data.combined@meta.data[HTO_cr1904,]$HTO_man = "WT spleen"
+data.combined@meta.data[HTO_ct1904,]$HTO_man = "WT thymus"
+
+data.combined@meta.data[HTO_Mr1902,]$HTO_man = "Myc* spleen"
+data.combined@meta.data[HTO_Mr1810,]$HTO_man = "Myc* spleen"
+data.combined@meta.data[HTO_Mt1902,]$HTO_man = "Myc* thymus"
+data.combined@meta.data[HTO_Mt1810,]$HTO_man  ="Myc* thymus"
+
+data.combined@meta.data[HTO_Pr1902,]$HTO_man = "Pten* spleen"
+data.combined@meta.data[HTO_Pr1904,]$HTO_man = "sPten* spleen"
+data.combined@meta.data[HTO_Pr1810,]$HTO_man ="Pten* spleen"
+data.combined@meta.data[HTO_Pt1904,]$HTO_man = "sPten* thymus"
+data.combined@meta.data[HTO_Pmr1902,]$HTO_man = "Myc* Pten* spleen" 
+data.combined@meta.data[HTO_Pmr1810,]$HTO_man = "Myc* Pten* spleen"
+data.combined@meta.data[HTO_Pmt1902,]$HTO_man = "Myc* Pten* thymus"
+data.combined@meta.data[HTO_Pmt1810,]$HTO_man = "Myc* Pten* thymus"
+data.combined@meta.data[HTO_ct1902,]$HTO_man = "WT thymus"
+data.combined@meta.data[HTO_ct1810,]$HTO_man = "WT thymus"
+data.combined@meta.data[HTO_Pt1902,]$HTO_man = "Pten* thymus"
+data.combined@meta.data[HTO_Pt1810,]$HTO_man = "Pten* thymus"
+
+# saveRDS(data.combined, file = paste0(OUTPUT_PATH, "data.combined.RData"))
+```
+
+# Cells that matter
+
+```{r}
+Idents(data.combined) <- 'HTO_man'
+sickphys_subset <- subset(data.combined, idents = c("sPten* thymus", "sPten* spleen", "WT thymus", "WT spleen"))
+```
+
+## Regression cell cycle
+
+```{r}
+## Cell cycle
+cc.genes.updated.2019 #for Human need to use bIOmart if using mice
+
+human = useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", version = 105) #Using a fixed version of the db as of DEc 21 allow to avoid getLDS error
+mouse = useEnsembl(biomart = "ensembl", dataset = "mmusculus_gene_ensembl", version = 105)
+genesV2 = getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = cc.genes$s.genes, mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows = TRUE)
+S.Genes_mouse <- unique(genesV2[, 2])
+
+genesV2 = getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = cc.genes$g2m.genes, mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows = TRUE)
+G2M.Genes_mouse <- unique(genesV2[, 2])
+
+#Assign Cell-Cycle Scores
+sickphys_subset <- CellCycleScoring(object = sickphys_subset, s.features = S.Genes_mouse, g2m.features = G2M.Genes_mouse, set.ident = TRUE)
+```
+
+```{r}
+#cell cycle regression
+sickphys_subset_reg <- ScaleData(sickphys_subset, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(sickphys_subset))
+  
+sickphys_subset_reg <- RunPCA(object = sickphys_subset_reg,
+                              assay = "RNA",
+                              verbose = FALSE,
+                              seed.use = 1234,
+                              npcs = 50)
+```
+
+## Re clustering without cycle
+
+```{r}
+sickphys_subset_reg <- ProjectDim(object = sickphys_subset_reg,
+                                  nfeatures.print = 20,
+                                  dims.print = 1:19)
+  
+sickphys_subset_reg <- FindNeighbors(object = sickphys_subset_reg,
+                                     dims = 1:19,
+                                     verbose = FALSE,
+                                     reduction = "pca")
+
+DefaultAssay(sickphys_subset_reg) <- "RNA"
+sickphys_subset_reg <- FindClusters(object = sickphys_subset_reg,
+                                    resolution = 1,
+                                    verbose = FALSE,
+                                    random.seed = 1234)
+sickphys_subset_reg <- RunUMAP(object = sickphys_subset_reg, reduction = "pca", seed.use = 1234, dims = 1:19)
+
+
+DimPlot(sickphys_subset_reg, group.by = "HTO_man")
+DimPlot(sickphys_subset_reg,group.by = "HTO_man", cols = c("#F8766D","#7CAE00","#00BFC4","#C77CFF"))
+```
+
+```{r}
+if(!file.exists(paste0(INPUT_PATH, "sickphys_reg.Robj"))) {
+  save(sickphys_subset_reg, file = paste0(INPUT_PATH, "sickphys_reg.Robj"))
+} else {
+  load(paste0(INPUT_PATH, "sickphys_reg.Robj"))
+}
+```
+
+# FeaturePlot
+
+```{r}
+FeaturePlot(sickphys_subset_reg, features = "Cd9", cols = c("gainsboro","moccasin","goldenrod1","orange","red","firebrick4"), pt.size = 1)
+```
+
+# DGE Ptendel Thymus vs Spleen
+
+```{r}
+Idents(sickphys_subset_reg) <- 'HTO_man'
+DGEsick <- FindMarkers(sickphys_subset_reg, ident.1 = "sPten* thymus", ident.2 = "sPten* spleen", logfc.threshold = 0, min.pct = 0)
+```
+
+# Volcano
+
+```{r}
+#volcano plot
+DGEsick$Significant <- ifelse(DGEsick$p_val_adj < 0.05, ifelse(DGEsick$avg_log2FC > 0,"Tumoral thymus Bonferroni < 0.05","Tumoral spleen Bonferroni < 0.05" ), "Not Significative")
+
+DGEsick$genename <- rownames(DGEsick) 
+#only CD9 label
+DGEsick$genename <- rownames(DGEsick) 
+ggplot(DGEsick, aes(x = avg_log2FC, y = -log10(p_val_adj))) +
+  ylim(0,100)+
+  geom_point(shape = 20, aes(color = Significant),size=2.5)+
+   scale_color_manual(values = c("grey","#F8766D","#7CAE00")) +
+   theme_bw(base_size = 12) + theme(legend.position = "bottom") +
+  scale_x_continuous( limits=c(-1.2, 1.2)) +
+ geom_label_repel(
+    data = DGEsick[DGEsick$genename == 'Cd9',],
+    aes(label = genename),
+    size = 6,
+    arrow = arrow(length = unit(0.010, "npc")),box.padding = unit(1.5, "lines"),
+    point.padding = unit(1, "lines"),segment.size = 0.8)
+```
