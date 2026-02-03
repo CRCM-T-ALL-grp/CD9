@@ -1,3 +1,7 @@
+> [!WARNING]
+> 🚧🚧🚧 **WORK IN PROGRESS** 🚧🚧🚧  
+> This folder is still under construction.
+
 # Bulk RNA-seq analysis
 
 ## Overview
