@@ -10,9 +10,10 @@ This repository contains the code used to analyze scRNA-seq datasets.
 It focuses on downstream statistical analysis and visualization starting from count matrices.
 
 The analysis is divided into two main steps:
-1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis
-2. Downstream analysis and visualization based on this curated object
+1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis : `scRNAseq_part1.Rmd`
+2. Downstream analysis and visualization based on this curated object : `scRNAseq_part2.Rmd`
 
+<!--
 ## Analysis workflow
 
 ### Step 1 - `scRNAseq_part1.Rmd`
@@ -28,14 +29,13 @@ However, the biological results remain identical:
 For reproducibility and transparency, the resulting Seurat object is therefore shared
 directly and should be used as the starting point for downstream analyses.
 
-<!-- Note: No Docker image is provided for `scRNAseq_part1.Rmd`. -->
-
 ### Step 2 - `scRNAseq_part2.Rmd`
 
 The second step of the analysis is based on the Seurat object generated in Step 1
 and includes downstream analyses and visualizations.
 
 This step is fully reproducible using the provided Docker image based on Seurat v4.4.0.
+-->
 
 ## Prerequisites
 
@@ -47,15 +47,15 @@ To run the downstream scRNA-seq analysis (Step 2), you need to:
 
 ## GitHub repository
 
-# Set your working directory
 ```bash
+# set your working directory
 export WORKING_DIR=/workspace/CD9
 ```
 ```bash
 git clone https://github.com/JulienRey1/CD9.git
 ```
 
-## Docker image (Step 2 only)
+## Docker image
 
 > [!WARNING]
 > To execute the downstream analysis, you must load the provided Docker image.
