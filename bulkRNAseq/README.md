@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains the code used to analyze bulk RNA-seq datasets.
+This repository contains the code and ressources used to analyze bulk RNA-seq datasets.
 It focuses on downstream statistical analysis and visualization starting from count matrices.
 
 The RNA-seq pre-processing (read QC, alignment, quantification) was performed separately
