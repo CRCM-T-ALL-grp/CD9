@@ -6,22 +6,16 @@
 
 ## Overview
 
-This repository contains the code and resources used to analyze scRNA-seq datasets.
+This repository contains the code used to analyze scRNA-seq datasets.
+It focuses on downstream statistical analysis and visualization starting from count matrices.
 
 The analysis is divided into two main steps:
-1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis.
+1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis
 2. Downstream analysis and visualization based on this curated object
 
 ## Analysis workflow
 
-### Step 1 – Data integration and subsetting (Seurat v4)
-
-The first step of the analysis was performed using Seurat v4 and consists of:
-- Merging multiple scRNA-seq datasets
-- Subsetting cells and genes of interest
-- Applying quality control and filtering criteria
-
-This step produces a curated Seurat R object that serves as the input for all subsequent analyses.
+### Step 1 - `scRNAseq_part1.Rmd`
 
 > [!WARNING]
 > The original Docker container used for this step is not available. As a result, exact reproduction of the UMAP coordinates is not guaranteed.
@@ -34,22 +28,21 @@ However, the biological results remain identical:
 For reproducibility and transparency, the resulting Seurat object is therefore shared
 directly and should be used as the starting point for downstream analyses.
 
-Note: No Docker image is provided for `scRNAseq_part1.Rmd`.
+<!-- Note: No Docker image is provided for `scRNAseq_part1.Rmd`. -->
 
-### Step 2 – Downstream analysis (Seurat v4.4.0)
+### Step 2 - `scRNAseq_part2.Rmd`
 
 The second step of the analysis is based on the Seurat object generated in Step 1
 and includes downstream analyses and visualizations.
 
 This step is fully reproducible using the provided Docker image based on Seurat v4.4.0.
 
-The analysis code for this step is contained in `scRNAseq_part2.Rmd`.
-
 ## Prerequisites
 
 To run the downstream scRNA-seq analysis (Step 2), you need to:
 - Clone this GitHub repository
-- Download the Docker image (`seurat4.4.0.v2.tar`) hosted on Zenodo
+- Download the Seurat object generated in Step 1 (`sickphys_reg.Robj`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
+- Download the Docker image (`seurat4.4.0.v2.tar`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
 - Load the Docker image on your system
 
 ## GitHub repository
