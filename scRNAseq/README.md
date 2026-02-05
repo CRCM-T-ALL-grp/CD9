@@ -10,7 +10,7 @@ The analysis is divided into two main steps:
 2. Downstream analysis and visualization based on this curated object : `scRNAseq_part2.Rmd`
 
 > [!WARNING]
-> As described in the data availability section of [CD9 README](../CD9/README.md), the preprocessing step in `scRNAseq_part1.Rmd` cannot be reproduced.
+> As described in the data availability section of [CD9 README](../README.md), the preprocessing step in `scRNAseq_part1.Rmd` cannot be reproduced.
 > For transparency and reproducibility, the resulting Seurat object is therefore provided directly and should be used as the starting point for all downstream analyses.
 
 ## Prerequisites
