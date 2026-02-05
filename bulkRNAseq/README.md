@@ -1,7 +1,3 @@
-> [!WARNING]
-> 🚧🚧🚧 **WORK IN PROGRESS** 🚧🚧🚧  
-> This folder is still under construction.
-
 # Bulk RNA-seq analysis
 
 ## Overview
@@ -9,8 +5,7 @@
 This repository contains the code and ressources used to analyze bulk RNA-seq datasets.
 It focuses on downstream statistical analysis and visualization starting from count matrices.
 
-The RNA-seq pre-processing (FastQC, alignment, quantification) was performed separately
-using the nf-core's rnaseq pipeline (3.21.0).
+RNA-seq FASTQ files were preprocessed using the nf-core rnaseq pipeline (v3.21.0), with STAR–RSEM as the aligner and default parameters.
 
 ## Prerequisites
 
