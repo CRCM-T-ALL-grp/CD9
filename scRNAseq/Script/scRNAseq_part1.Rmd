@@ -1,6 +1,6 @@
 ---
 title: "scRNAseq"
-author: "Julien REY"
+author: "Mathis Nozais adapted by Julien REY"
 output:
   html_document:
     code_folding: hide
