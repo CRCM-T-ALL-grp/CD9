@@ -2,8 +2,10 @@
 
 ## Overview
 
-This repository contains the code used to analyze scRNA-seq datasets.
-It focuses on downstream statistical analysis and visualization starting from count matrices.
+This repository contains the code used to analyze scRNA-seq datasets and focuses on downstream statistical analysis and visualization starting from count matrices.
+
+Starting from FASTQ files, demultiplexing, barcode processing, gene counting, and aggregation were performed using Cell Ranger v3.0.1.  
+For each experiment, antibody counts for cell hashing were quantified using CITE-seq-Count v1.4.1.
 
 The analysis is divided into two main steps:
 1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis : `scRNAseq_part1.Rmd`
