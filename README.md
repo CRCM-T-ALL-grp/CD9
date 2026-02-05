@@ -1,4 +1,4 @@
-**This repository contains the instructions and material to reproduce the analysis reported in the article :**
+**This repository contains the instructions to reproduce the analysis reported in the article :**
 
 # Dynamic expression of CD9 protein in T-cell acute lymphoblastic leukemia
 
@@ -21,15 +21,17 @@ Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 ### Overview
 
 The bio-informatic analysis are divided in 2 part : 
-- scRNAseq on PTEN<sup>del</sup> mice
-- bulkRNAseq on Patient-Derived Xenograft (PDX) and Jurkat cells
+- scRNAseq of thymocytes and splenocytes from wildtype and Pten knockout mice
+- bulkRNAseq of Patient-Derived Xenograft of primary human T-ALL samples in immunodeficient NSG mice and Jurkat cells
 
-All the code are available in this github repository. Required data and builded Docker images are available respectively in GEO and Zenodo. Instructions to reproduce the analysis are provided in the different subdirectories:
+All the code are available in this github repository.
+Required data and builded Docker images are available in GEO and Zenodo.
+Instructions to reproduce the analysis are provided in the different subdirectories:
 
 - scRNAseq
-	- Seurat preprocessing and analysis of the mice is described in the scRNAseq folder : [scRNAseq](scRNAseq/)
+	- Seurat preprocessing and analysis of the mice is described in the [scRNAseq](scRNAseq/) folder
 - bulkRNAseq
-	- Preprocesing and analysis of the PDX and Jurkat cells are described in the bulkRNAseq folder : [bulkRNAseq](bulkRNAseq/)
+	- Preprocesing and analysis of the PDX and Jurkat cells are described in the [bulkRNAseq](bulkRNAseq/) folder
 
 ---
 
@@ -37,8 +39,10 @@ All the code are available in this github repository. Required data and builded 
 
 #### Mice scRNAseq
 
-Raw counts matrix and metadata to assign each cell to a sample for the mice scRNAseq experiment are available via GEO. Final R Seurat object can be dowloaded via Zenodo.
+The raw count matrix and the associated metadata used to assign each cell to its sample for the mouse scRNA-seq experiment are available via GEO. The final Seurat R object can be downloaded from Zenodo.
+Raw sequencing data (FASTQ files) are not available. Some mice used to generate the dataset were not included in this publication and therefore remain confidential.
 
 #### PDX and Jurkat bulkRNAseq
 
-Raw counts and CPM normalized counts for the bulkRNAseq are available via GEO. The intermediates fit object from edgeR can be downloaded via Zenodo.
+The raw counts and log-CPM–normalized counts for the bulk RNA-seq experiments are available via GEO, and the intermediate fitted edgeR objects can be downloaded from Zenodo.
+Raw sequencing data (FASTQ files) are not available for the patient-derived xenograft (PDX) samples due to patient privacy concerns.
