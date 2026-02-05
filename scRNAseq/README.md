@@ -1,7 +1,3 @@
-> [!WARNING]
-> 🚧🚧🚧 **WORK IN PROGRESS** 🚧🚧🚧  
-> This folder is still under construction.
-
 # Single-cell RNA-seq analysis
 
 ## Overview
@@ -13,29 +9,9 @@ The analysis is divided into two main steps:
 1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis : `scRNAseq_part1.Rmd`
 2. Downstream analysis and visualization based on this curated object : `scRNAseq_part2.Rmd`
 
-<!--
-## Analysis workflow
-
-### Step 1 - `scRNAseq_part1.Rmd`
-
 > [!WARNING]
-> The original Docker container used for this step is not available. As a result, exact reproduction of the UMAP coordinates is not guaranteed.
-
-However, the biological results remain identical:
-- the same cells and genes are selected
-- the same filtering thresholds are applied
-- downstream conclusions are unchanged
-
-For reproducibility and transparency, the resulting Seurat object is therefore shared
-directly and should be used as the starting point for downstream analyses.
-
-### Step 2 - `scRNAseq_part2.Rmd`
-
-The second step of the analysis is based on the Seurat object generated in Step 1
-and includes downstream analyses and visualizations.
-
-This step is fully reproducible using the provided Docker image based on Seurat v4.4.0.
--->
+> As describe in [CD9](CD9/README.md) data availability, the preprocessing in the first main step `scRNAseq_part1.Rmd` isn't possible.
+> For reproducibility and transparency, the resulting Seurat object is therefore shared directly and should be used as the starting point for downstream analyses.
 
 ## Prerequisites
 
