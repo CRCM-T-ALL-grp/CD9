@@ -15,7 +15,7 @@ The analysis is divided into two main steps:
 
 ## Prerequisites
 
-To run the downstream scRNA-seq analysis (Step 2), you need to:
+To run the scRNA-seq analysis, you need to:
 - Clone this GitHub repository
 - Download the Seurat object generated in Step 1 (`sickphys_reg.Robj`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
 - Download the Docker image (`seurat4.4.0.v2.tar`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
