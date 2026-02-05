@@ -9,8 +9,8 @@
 This repository contains the code and ressources used to analyze bulk RNA-seq datasets.
 It focuses on downstream statistical analysis and visualization starting from count matrices.
 
-The RNA-seq pre-processing (read QC, alignment, quantification) was performed separately
-using the nf-core/rnaseq pipeline and is described in the associated publication.
+The RNA-seq pre-processing (FastQC, alignment, quantification) was performed separately
+using the nf-core's rnaseq pipeline (3.21.0).
 
 ## Prerequisites
 
