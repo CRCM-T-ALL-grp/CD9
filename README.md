@@ -12,10 +12,11 @@ PMID:
 
 Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 -->
+Zenodo  
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
-<!--
-[![Generic badge](https://img.shields.io/badge/GEO-GSExxxxxx-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSExxxxxx)
--->
+
+GEO bulkRNA-seq  
+[![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
 
 ---
 ### Overview
