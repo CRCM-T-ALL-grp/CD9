@@ -19,8 +19,8 @@ The analysis is divided into two main steps:
 
 To run the scRNA-seq analysis, you need to:
 - Clone this GitHub repository
-- Download the Seurat object generated in Step 1 (`sickphys_reg.Robj`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
-- Download the Docker image (`seurat4.4.0.v2.tar`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
+- Download the Seurat object generated in Step 1 (`sickphys_reg.Robj`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
+- Download the Docker image (`seurat4.4.0.v2.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
 
 ## GitHub repository
@@ -42,7 +42,7 @@ git clone https://github.com/JulienRey1/CD9.git
 
 ### Download the Docker image
 ```bash
-wget -P $WORKING_DIR/Container/ https://zenodo.org/records/xxxxxxxx/files/seurat4.4.0.v2.tar
+wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/seurat4.4.0.v2.tar
 ```
 ### Load the Docker image
 ```bash
