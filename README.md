@@ -11,9 +11,9 @@ Authors : Quessada Julie<sup>1,2</sup>, Nozais Mathis<sup>1</sup>, Savey Charlot
 PMID:
 
 Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
-
-[![DOI](https://zenodo.org/badge/DOI/xx.xxxx/zenodo.xxxxxxxx.svg)](https://doi.org/xx.xxxx/zenodo.xxxxxxxx)
-
+-->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
+<!--
 [![Generic badge](https://img.shields.io/badge/GEO-GSExxxxxx-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSExxxxxx)
 -->
 
