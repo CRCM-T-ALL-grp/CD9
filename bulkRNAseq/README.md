@@ -11,7 +11,7 @@ RNA-seq FASTQ files were preprocessed using the nf-core rnaseq pipeline (v3.21.0
 
 To run the analysis, you need to prepare the following environment:
 - Clone this GitHub repository
-- Download the Docker image (`rna_analysis.tar`) hosted on [Zenodo]<!--(https://doi.org/xx.xxxx/zenodo.xxxxxxxx)-->
+- Download the Docker image (`rna_analysis.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
 
 Pre-processed data files are also available on Zenodo. These files allow you to skip
@@ -39,7 +39,7 @@ git clone https://github.com/JulienRey1/CD9.git
 
 ### Download the Docker image
 ```bash
-wget -P $WORKING_DIR/Container/ https://zenodo.org/records/xxxxxxxx/files/rna_analysis.tar
+wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/rna_analysis.tar
 ```
 ### Load the Docker image
 ```bash
