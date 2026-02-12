@@ -13,6 +13,7 @@ To run the analysis, you need to prepare the following environment:
 - Clone this GitHub repository
 - Download the Docker image (`rna_analysis.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
+- Download the count matrix on [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
 
 Pre-processed data files are also available on Zenodo. These files allow you to skip
 the initial data preparation steps and directly start the differential expression analysis:
