@@ -12,10 +12,9 @@ PMID:
 
 Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 -->
-Zenodo  
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
 
-GEO bulkRNA-seq  
 [![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
 
 ---
@@ -40,10 +39,10 @@ Instructions to reproduce the analysis are provided in the different subdirector
 
 #### Mice scRNAseq
 
-The raw count matrix and the associated metadata used to assign each cell to its sample for the mouse scRNA-seq experiment are available via GEO. The final Seurat R object can be downloaded from Zenodo.
+The raw and normalized count matrices for the scRNA-seq experiment are available on Zenodo, along with the final Seurat R object.
 Raw sequencing data (FASTQ files) are not available. Some mice used to generate the dataset were not included in this publication and therefore remain confidential.
 
 #### PDX and Jurkat bulkRNAseq
 
 The raw counts and log-CPM–normalized counts for the bulk RNA-seq experiments are available via GEO, and the intermediate fitted edgeR objects can be downloaded from Zenodo.
-Raw sequencing data (FASTQ files) are not available for the patient-derived xenograft (PDX) samples due to patient privacy concerns.
+Raw sequencing data (FASTQ files) are available for the Jurkat samples on GEO, but are not provided for the patient-derived xenograft (PDX) samples due to patient privacy concerns.
