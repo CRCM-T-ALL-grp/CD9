@@ -11,11 +11,7 @@ The analysis is divided into two main steps:
 1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis : `scRNAseq_part1.Rmd`
 2. Downstream analysis and visualization based on this curated object : `scRNAseq_part2.Rmd`
 
-In addition to in-house datasets, this repository also includes the reanalysis of a publicly available scRNA-seq dataset. The dataset can be downloaded using :
-```bash
-wget -P $WORKDIR/ https://zenodo.org/records/XXXXXXXX/files/XXXXXXXXXX.rds
-```
-The script used for this reanalysis follows the same workflow as described below, starting from the Seurat object.
+In addition to in-house datasets, this repository also includes the reanalysis of a publicly available scRNA-seq dataset : `scRNAseq_public_dataset.Rmd`
 
 > [!WARNING]
 > As described in the data availability section of [CD9 README](../README.md), the preprocessing step in `scRNAseq_part1.Rmd` cannot be reproduced.
@@ -39,6 +35,13 @@ export WORKING_DIR=/workspace/CD9
 git clone https://github.com/JulienRey1/CD9.git
 ```
 
+## Download Public Dataset
+
+The public dataset can be downloaded using the following commands:
+```bash
+wget -P $WORKING_DIR/Data/ https://zenodo.org/records/XXXXXXXX/files/XXXXXXXXXX.rds
+```
+
 ## Docker image
 
 > [!WARNING]
@@ -56,7 +59,7 @@ docker load --input $WORKING_DIR/Container/seurat4.4.0.v2.tar
 ```
 ### Run the Docker container
 ```bash
-docker run -d --name seurat4.4.0.v2 -p 9191:8787 -v $WORKING_DIR:/workspace seurat4.4.0.v2
+docker run -d --name seurat4.4.0.v2 -p 9292:8787 -v $WORKING_DIR:/workspace seurat4.4.0.v2
 ```
 Once the container is running, the analysis environment can be accessed through a web browser:  
-http://localhost:9191/
+http://localhost:9292/
