@@ -19,21 +19,18 @@ Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 
 ---
 ### Overview
+This repository contains the code and resources used to perform bioinformatic analyses of both single-cell and bulk RNA-seq datasets, with a focus on downstream statistical analysis and visualization starting from count matrices.
 
-The bio-informatic analysis are divided in 2 part : 
-- scRNAseq of thymocytes and splenocytes from wildtype and Pten knockout mice
-- bulkRNAseq of Patient-Derived Xenograft of primary human T-ALL samples in immunodeficient NSG mice and Jurkat cells
+The analyses are divided into two main parts:
 
-All the code are available in this github repository.
-Required data and builded Docker images are available in GEO and Zenodo.
-Instructions to reproduce the analysis are provided in the different subdirectories:
+- [scRNA-seq](scRNAseq/) : analysis of thymocytes and splenocytes from wild-type and Pten knockout mice. This workflow includes Seurat-based preprocessing and downstream analysis starting from count matrices.
+- [bulk RNA-seq](bulkRNAseq/) : analysis of Patient-Derived Xenograft (PDX) models of primary human T-ALL samples in immunodeficient NSG mice, as well as Jurkat cell lines.
 
-- scRNAseq
-	- Seurat preprocessing and analysis of the mice is described in the [scRNAseq](scRNAseq/) folder
-- bulkRNAseq
-	- Preprocesing and analysis of the PDX and Jurkat cells are described in the [bulkRNAseq](bulkRNAseq/) folder
+In addition to in-house datasets, both workflows include the reanalysis of publicly available datasets obtained from their respective GEO or Zenodo repositories.
 
----
+All code is available in this GitHub repository. Required datasets and pre-built Docker images are hosted on GEO and Zenodo. Detailed instructions to reproduce the analyses are provided in the corresponding subdirectories.
+
+---  
 
 ### Data Availability
 
