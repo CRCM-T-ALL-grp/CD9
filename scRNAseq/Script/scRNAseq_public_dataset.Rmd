@@ -1,0 +1,175 @@
+---
+title: "scRNAseq public dataset"
+author: "Julien REY"
+date: "2026-03-13"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+    toc_depth: 3
+    highlight: zenburn
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+##############################s
+Made for docker seurat4.4.0.v2
+##############################
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Library
+
+```{r}
+library(Seurat)
+library(viridis)
+library(ggplot2)
+library(dplyr)
+
+set.seed(1234)
+
+pal <- viridis::rocket(20, direction = -1)
+
+WORKDIR <- "/yourWorkDir/"
+
+INPUT_PATH  <- paste0(WORKDIR, "/Data/")
+OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+```
+
+# Data
+
+```{r}
+dataset2 <- readRDS(file = paste0(INPUT_PATH, "Dataset2.rds"))
+dataset2 <- UpdateSeuratObject(dataset2)
+```
+
+# Umap
+
+```{r}
+pPlot <- DimPlot(dataset2, group.by = "orig.ident")+ggtitle("Dataset2")
+
+# ggsave(plot = pPlot,
+#        filename = "DNenriched_umap.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1300,
+#        height = 1000,
+#        dpi = 170,
+#        units = "px")
+
+dataset2$RNA_snn_res.0.42 <- factor(dataset2$RNA_snn_res.0.42, levels = c(4, 1, 2, 5, 0, 8, 3, 6, 7))
+
+pPlot <- DimPlot(dataset2, group.by = "RNA_snn_res.0.42")+ggtitle("Dataset2")
+
+# ggsave(plot = pPlot,
+#        filename = "clusters0.42_umap.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1300,
+#        height = 1000,
+#        dpi = 170,
+#        units = "px")
+
+pPlot <- DimPlot(dataset2, group.by = "Phase")+ggtitle("Dataset2")
+
+# ggsave(plot = pPlot,
+#        filename = "cycle_umap.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1300,
+#        height = 1000,
+#        dpi = 170,
+#        units = "px")
+```
+
+# Feature Plot
+
+```{r}
+pPlot <- FeaturePlot(dataset2, features = c("Cd9", "Kit", "S1pr1", "Itgb7", "Cd44", "Il2ra"), order = TRUE)&scale_colour_gradientn(colors = pal)
+
+# ggsave(plot = pPlot,
+#        filename = "featureplot.png",
+#        path = OUTPUT_PATH,
+#        width = 1700,
+#        height = 2100,
+#        dpi = 170,
+#        units = "px")
+```
+
+# Clustering
+
+```{r}
+DimPlot(dataset2, group.by = "RNA_snn_res.0.42", label = TRUE)+ggtitle("Dataset2")
+
+# Try to seprate cluster 6 (SP) into CD4SP & CD8SP
+dataset2 <- FindSubCluster(dataset2, cluster = 4, graph.name = "RNA_snn", resolution = 0.1, subcluster.name = "sub.cluster.4")
+dataset2 <- FindSubCluster(dataset2, cluster = 6, graph.name = "RNA_snn", resolution = 0.2, subcluster.name = "sub.cluster.6")
+
+# Clusters from the sub-clustering
+dataset2$sub.cluster <- as.character(dataset2$RNA_snn_res.0.42)
+dataset2$sub.cluster[dataset2$RNA_snn_res.0.42 == 4] <- dataset2$sub.cluster.4[dataset2$RNA_snn_res.0.42 == 4]
+dataset2$sub.cluster[dataset2$RNA_snn_res.0.42 == 6] <- dataset2$sub.cluster.6[dataset2$RNA_snn_res.0.42 == 6]
+
+dataset2$sub.cluster <- factor(dataset2$sub.cluster, levels = c("4_0", "4_1", "1", "2", "5", "0", "8", "3", "6_0", "6_1", "7"))
+
+pPlot <- DimPlot(dataset2, group.by = "sub.cluster")+ggtitle("Dataset2")
+
+# ggsave(plot = pPlot,
+#        filename = "sub.cluster_umap.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1300,
+#        height = 1000,
+#        dpi = 170,
+#        units = "px")
+
+# Annotation 
+dataset2$annotation <- case_when(
+  dataset2$sub.cluster == "4_0" ~ "DN1-DN2",
+  dataset2$sub.cluster %in% c("1","4_1") ~ "DN3a",
+  dataset2$sub.cluster == "2" ~ "DN3b-DN4",
+  dataset2$sub.cluster == "5" ~ "ISP-DPblast",
+  dataset2$sub.cluster %in% c("0","8") ~ "DPsmall",
+  dataset2$sub.cluster == "3" ~ "DP69",
+  dataset2$sub.cluster == "6_0" ~ "CD4SP",
+  dataset2$sub.cluster == "6_1" ~ "CD8SP",
+  dataset2$sub.cluster == "7" ~ "Tgd",
+  TRUE ~ "other"
+)
+
+dataset2$annotation <- factor(dataset2$annotation, levels = c("DN1-DN2", "DN3a", "DN3b-DN4", "ISP-DPblast", "DPsmall", "DP69", "CD4SP", "CD8SP", "Tgd"))
+
+pPlot <- DimPlot(dataset2, group.by = "annotation")+ggtitle("Dataset2")
+
+# ggsave(plot = pPlot,
+#        filename = "annotate_umap.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1300,
+#        height = 1000,
+#        dpi = 170,
+#        units = "px")
+```
+
+# DotPlot
+
+```{r}
+genes <- c("Kit", "Cd44", "Ptcra", "Il2ra", "Tcrg-C1", "Pcna", "Mki67", "Cdk1", "Trbc1", "Rag1", "Tcf7", "Cd4", "Cd8a", "Cd8b1", "Cd5", "Cd69", "Trac", "Itgb7", "S1pr1", "Nkg7", "Trdc", "Blk", "Cd9")
+
+Idents(dataset2) <- "annotation"
+pPlot <- DotPlot(dataset2, features = genes)+
+  geom_point(aes(size=pct.exp), shape = 21, colour="black", stroke=0.5)+
+  scale_colour_gradient2(low = "steelblue", mid = "ivory1", high = "red")+
+  guides(size=guide_legend(override.aes=list(shape=21, colour="black", fill="white")))+
+  RotatedAxis()+
+  coord_flip()
+pPlot
+
+# ggsave(plot = pPlot,
+#        filename = "annotate_dotplot.pdf",
+#        path = OUTPUT_PATH,
+#        width = 870,
+#        height = 1200,
+#        dpi = 170,
+#        units = "px")
+```
+
