@@ -1,0 +1,98 @@
+---
+title: "Migration versus CD9"
+author: "Dominique Payet-Bornet"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+editor_options: 
+  chunk_output_type: console
+---
+
+#########################
+Made for docker seurat500
+#########################
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# PATH
+WORKDIR <- "/yourWorkDir/"
+
+INPUT_PATH  <- paste0(WORKDIR, "/Data/")
+OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+```
+
+# Data loading
+
+```{r}
+top_CXCL12_PDX11 <- read.table(paste0(INPUT_PATH, "PDX11_top.csv"), header = TRUE) %>%
+mutate(chamber = "top", condition = "CXCL12", replicate = "PDX11")
+
+top_CXCL12_PDX65 <- read.table(paste0(INPUT_PATH, "PDX65_top.csv"), header = TRUE) %>%
+mutate(chamber = "top", condition = "CXCL12", replicate = "PDX65")
+
+bottom_CXCL12_PDX11 <- read.table(paste0(INPUT_PATH, "PDX11_bottom.csv"), header = TRUE) %>%
+mutate(chamber = "bottom", condition = "CXCL12", replicate = "PDX11")
+
+bottom_CXCL12_PDX65 <- read.table(paste0(INPUT_PATH, "PDX65_bottom.csv"), header = TRUE) %>%
+mutate(chamber = "bottom", condition = "CXCL12", replicate = "PDX65")
+
+top_noCXCL12_PDX65 <- read.table(paste0(INPUT_PATH, "PDX65_top_noC12.csv"), header = TRUE) %>%
+mutate(chamber = "top", condition = "No_CXCL12", replicate = "Ctrl_noCXCL12")
+
+bottom_noCXCL12_PDX65 <- read.table(paste0(INPUT_PATH, "PDX65_bottom_noC12.csv"), header = TRUE) %>%
+mutate(chamber = "bottom", condition = "No_CXCL12", replicate = "Ctrl_noCXCL12")
+
+cells <- bind_rows(top_CXCL12_PDX11, top_CXCL12_PDX65, bottom_CXCL12_PDX11, bottom_CXCL12_PDX65, top_noCXCL12_PDX65, bottom_noCXCL12_PDX65)
+
+cells <- cells %>%
+  rename(APC = `Comp.APC.A`)
+```
+
+
+```{r}
+# ==============================
+# 7. Create APC intensity bins (width = 10)
+# ==============================
+
+cells <- cells %>%
+  mutate(APC_bin = floor(APC / 10) * 10)
+
+# ==============================
+# 8. Calculate migration per bin
+# ==============================
+
+migration_by_bin <- cells %>%
+  group_by(APC_bin, chamber, replicate) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  tidyr::pivot_wider(
+    names_from = chamber,
+    values_from = n,
+    values_fill = 0
+  ) %>%
+  mutate(
+    total_cells = top + bottom,
+    migration_rate = bottom / (top + bottom) * 100
+  )
+
+migration_by_bin <- migration_by_bin %>%
+  filter(bottom >= 3, total_cells > 30)
+
+
+ggplot(migration_by_bin,
+       aes(x = APC_bin, y = migration_rate,
+           color = replicate,
+           group = replicate)) +
+  geom_point(size = 2, alpha = 0.6) +
+  geom_smooth(method = "loess", span = 0.7, se = FALSE) + scale_color_manual(values = c(
+      "PDX11" = "red",
+      "PDX65" = "blue",
+      "Ctrl_noCXCL12" = "grey")) +
+  theme_classic() +
+  labs(
+    x = "APC fluorescence intensity",
+    y = "Migration rate (%)"
+  )
+```
