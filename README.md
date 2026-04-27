@@ -19,16 +19,15 @@ Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 
 ---
 ### Overview
-This repository contains the code and resources used to perform bioinformatic analyses of both single-cell and bulk RNA-seq datasets, with a focus on downstream statistical analysis and visualization starting from count matrices.
+This repository contains the code and resources used to perform bioinformatic analyses of single-cell, bulk RNA-seq datasets and flow cytometry, with a focus on downstream statistical analysis and visualization starting from count matrices.
 
-The analyses are divided into two main parts:
+The analyses are organized into three main parts:
 
-- [scRNA-seq](scRNAseq/) : analysis of thymocytes and splenocytes from wild-type and Pten knockout mice. This workflow includes Seurat-based preprocessing and downstream analysis starting from count matrices.
-- [bulk RNA-seq](bulkRNAseq/) : analysis of Patient-Derived Xenograft (PDX) models of primary human T-ALL samples in immunodeficient NSG mice, as well as Jurkat cell lines.
+- [scRNA-seq](scRNAseq/) : Analysis of thymocytes and splenocytes from wild-type and Pten knockout mice. This workflow includes Seurat-based preprocessing and downstream analyses starting from count matrices, as well as the reanalysis of publicly available datasets.
+- [bulk RNA-seq](bulkRNAseq/) : Analysis of Patient-Derived Xenograft (PDX) models from primary human T-ALL samples in immunodeficient NSG mice, along with Jurkat cell lines. This workflow also includes the reanalysis of publicly available datasets, including TCGA RNA-seq data.
+- [flow cytometry](cytometry/) : Basic analysis of flow cytometry data with generation of a single representative figure.
 
-In addition to in-house datasets, both workflows include the reanalysis of publicly available datasets obtained from their respective GEO or Zenodo repositories.
-
-All code is available in this GitHub repository. Required datasets and pre-built Docker images are hosted on GEO and Zenodo. Detailed instructions to reproduce the analyses are provided in the corresponding subdirectories.
+All code is available in this GitHub repository. Required datasets and pre-built Docker images are hosted on GEO and Zenodo. Detailed instructions for reproducing the analyses are provided in the corresponding subdirectories.
 
 ---  
 
