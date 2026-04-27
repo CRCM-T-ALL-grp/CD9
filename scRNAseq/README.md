@@ -20,7 +20,7 @@ To run the scRNA-seq analysis, you need to:
 - Download the Docker image (`seurat500.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
 
-## GitHub repository
+## Working Directory
 
 ```bash
 # set your working directory
