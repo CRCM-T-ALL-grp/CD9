@@ -37,9 +37,8 @@ All code is available in this GitHub repository. Required datasets and pre-built
 #### Mice scRNAseq
 
 The raw and normalized count matrices for the scRNA-seq experiment are available on Zenodo, along with the final Seurat R object.
-Raw sequencing data (FASTQ files) are not available. Some mice used to generate the dataset were not included in this publication and therefore remain confidential.
 
 #### PDX and Jurkat bulkRNAseq
 
 The raw counts and log-CPM–normalized counts for the bulk RNA-seq experiments are available via GEO, and the intermediate fitted edgeR objects can be downloaded from Zenodo.
-Raw sequencing data (FASTQ files) are available for the Jurkat samples on GEO, but are not provided for the patient-derived xenograft (PDX) samples due to patient privacy concerns.
+Raw sequencing data (FASTQ files) are available for the Jurkat samples on GEO.
