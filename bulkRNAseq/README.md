@@ -12,7 +12,6 @@ In addition to in-house datasets, this repository includes the analysis of publi
 ## Prerequisites
 
 To run the analysis, you need to prepare the following environment:
-- Clone this GitHub repository
 - Download the Docker image (`rna_analysis.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
 - Download the count matrix on [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
@@ -22,16 +21,13 @@ the initial data preparation steps and directly start the differential expressio
 - `edgeR_fit.rds`: R object containing the fitted edgeR model (design matrix and dispersions)
 - `data.filtered.rds`: filtered count matrix with sample and gene annotations
 
-## Github repository
+## Working Directory
 
 ```bash
 # set your working directory
 export WORKING_DIR=/workspace/CD9
 ```
 
-```bash
-git clone https://github.com/JulienRey1/CD9.git
- ```
 ## Download Public Dataset
 
 The TCGA dataset can be downloaded using the following commands:
@@ -42,7 +38,7 @@ wget -P $WORKING_DIR/Data/ https://zenodo.org/records/14044880/files/Clinical_ma
 ## Docker image
 
 > [!WARNING]
-> To execute the analysis, you must load the provided Docker image.
+> To reproduce the analysis, you must load the provided Docker image.
 > Docker must be installed on your system.
 > See https://docs.docker.com/install/ for installation instructions.
 
