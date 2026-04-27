@@ -13,16 +13,11 @@ The analysis is divided into two main steps:
 
 In addition to in-house datasets, this repository also includes the reanalysis of a publicly available scRNA-seq dataset : `scRNAseq_public_dataset.Rmd`
 
-> [!WARNING]
-> As described in the data availability section of [CD9 README](../README.md), the preprocessing step in `scRNAseq_part1.Rmd` cannot be reproduced.
-> For transparency and reproducibility, the resulting Seurat object is therefore provided directly and should be used as the starting point for all downstream analyses.
-
 ## Prerequisites
 
 To run the scRNA-seq analysis, you need to:
-- Clone this GitHub repository
-- Download the Seurat object generated in Step 1 (`sickphys_reg.Robj`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
-- Download the Docker image (`seurat4.4.0.v2.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
+- Download the Seurat object generated in `scRNAseq_part1.Rmd` (`sickphys_reg.Robj`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
+- Download the Docker image (`seurat500.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
 - Load the Docker image on your system
 
 ## GitHub repository
@@ -31,35 +26,32 @@ To run the scRNA-seq analysis, you need to:
 # set your working directory
 export WORKING_DIR=/workspace/CD9
 ```
-```bash
-git clone https://github.com/JulienRey1/CD9.git
-```
 
 ## Download Public Dataset
 
 The public dataset can be downloaded using the following commands:
 ```bash
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/XXXXXXXX/files/XXXXXXXXXX.rds
+wget -P $WORKING_DIR/Data/ https://zenodo.org/records/19002805/files/Dataset2.rds
 ```
 
 ## Docker image
 
 > [!WARNING]
-> To execute the downstream analysis, you must load the provided Docker image.
+> To reproduce the downstream analysis, you must load the provided Docker image.
 > Docker must be installed on your system.
 > See https://docs.docker.com/install/ for installation instructions.
 
 ### Download the Docker image
 ```bash
-wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/seurat4.4.0.v2.tar
+wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/seurat500.tar
 ```
 ### Load the Docker image
 ```bash
-docker load --input $WORKING_DIR/Container/seurat4.4.0.v2.tar
+docker load --input $WORKING_DIR/Container/seurat500.tar
 ```
 ### Run the Docker container
 ```bash
-docker run -d --name seurat4.4.0.v2 -p 9292:8787 -v $WORKING_DIR:/workspace seurat4.4.0.v2
+docker run -d --name seurat500 -p 9292:8787 -v $WORKING_DIR:/workspace seurat500
 ```
 Once the container is running, the analysis environment can be accessed through a web browser:  
 http://localhost:9292/
