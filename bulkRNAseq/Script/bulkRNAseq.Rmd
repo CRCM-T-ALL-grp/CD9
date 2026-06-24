@@ -30,8 +30,8 @@ library(ComplexHeatmap)
 
 WORKDIR <- "/yourWorkDir/"
 
-INPUT_PATH  <- paste0(WORKDIR, "/Data/")
-OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
 
 # Set the random number seed
 set.seed(1234)
@@ -115,41 +115,47 @@ tresh_padj <- 1e-5
 ```
 
 ```{r}
-group <- factor(c("PDX52_9Neg", "PDX52_9Neg", "PDX52_9Pos", "PDX52_9Pos", "PDX53_9Neg", "PDX53_9Neg", "PDX53_9Pos", "PDX53_9Pos", "jkt_9Neg", "jkt_9Neg", "jkt_9Pos", "jkt_9Pos"))
-
-# Create edgeR object
-y <- DGEList(counts = counts, group = group)
-
-# Filtering low number of counts
-keep <- filterByExpr(y)
-y <- y[keep,,keep.lib.sizes=FALSE]
-
-# Normalisation
-y <- normLibSizes(y)
-
-cpm_norm <- cpm(y, normalized.lib.sizes = TRUE)
-cpm_norm <- round(cpm_norm, 2)
-
-df.norm_cpm <- data.frame(
-  gene = y$genes,
-  cpm_norm)
-
-logcpm_norm <- cpm(y, log = TRUE, normalized.lib.sizes = TRUE)
-logcpm_norm <- round(logcpm_norm, 2)
-
-df.logcpm_norm <- data.frame(
-  gene = y$genes,
-  logcpm_norm)
-
-# write.table(df.norm_cpm, file = paste0(INPUT_PATH, "norm_cpm_counts.csv"), quote = FALSE, sep = "\t", row.names = FALSE)
-
-design <- model.matrix(~0+group, data=y$samples)
-
-y <- estimateDisp(y, design)
-
-fit <- glmQLFit(y, design)
-
-# saveRDS(fit, file = paste0(INPUT_PATH, "edgeR_fit.rds"))
+if(! file.exists(paste0(INPUT_PATH, "edgeR_fit.rds"))) {
+  
+  group <- factor(c("PDX52_9Neg", "PDX52_9Neg", "PDX52_9Pos", "PDX52_9Pos", "PDX53_9Neg", "PDX53_9Neg", "PDX53_9Pos", "PDX53_9Pos", "jkt_9Neg", "jkt_9Neg", "jkt_9Pos", "jkt_9Pos"))
+  
+  # Create edgeR object
+  y <- DGEList(counts = counts, group = group)
+  
+  # Filtering low number of counts
+  keep <- filterByExpr(y)
+  y <- y[keep,,keep.lib.sizes=FALSE]
+  
+  # Normalisation
+  y <- normLibSizes(y)
+  
+  cpm_norm <- cpm(y, normalized.lib.sizes = TRUE)
+  cpm_norm <- round(cpm_norm, 2)
+  
+  df.norm_cpm <- data.frame(
+    gene = y$genes,
+    cpm_norm)
+  
+  logcpm_norm <- cpm(y, log = TRUE, normalized.lib.sizes = TRUE)
+  logcpm_norm <- round(logcpm_norm, 2)
+  
+  df.logcpm_norm <- data.frame(
+    gene = y$genes,
+    logcpm_norm)
+  
+  # write.table(df.norm_cpm, file = paste0(INPUT_PATH, "norm_cpm_counts.csv"), quote = FALSE, sep = "\t", row.names = FALSE)
+  
+  design <- model.matrix(~0+group, data=y$samples)
+  
+  y <- estimateDisp(y, design)
+  
+  fit <- glmQLFit(y, design)
+  
+  saveRDS(fit, file = paste0(INPUT_PATH, "edgeR_fit.rds"))
+  
+} else {
+  fit <- readRDS(file = paste0(INPUT_PATH, "edgeR_fit.rds"))
+}
 ```
 
 ```{r}
@@ -234,7 +240,8 @@ for (gene in gene_intersect) {
 }
 ```
 
-# Heatmap
+# Figure 5-I
+## Heatmap
 
 ```{r}
 # genes organisation for the heatmap

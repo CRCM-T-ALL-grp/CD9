@@ -1,57 +1,91 @@
-# Single-cell RNA-seq analysis
+# Single-cell RNA-seq Analysis
 
 ## Overview
 
-This repository contains the code used to analyze scRNA-seq datasets and focuses on downstream statistical analysis and visualization starting from count matrices.
+This directory contains the code used for single-cell RNA-seq analyses performed in this project.
 
-Starting from FASTQ files, demultiplexing, barcode processing, gene counting, and aggregation were performed using Cell Ranger v3.0.1.  
-For each experiment, antibody counts for cell hashing were quantified using CITE-seq-Count v1.4.1.
+Three analysis workflows are provided:
 
-The analysis is divided into two main steps:
-1. Generation of a curated Seurat object from raw scRNA-seq data and firts analysis : `scRNAseq_part1.Rmd`
-2. Downstream analysis and visualization based on this curated object : `scRNAseq_part2.Rmd`
+| Script                        | Description                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| `scRNAseq_part1.Rmd`          | Generation of a curated Seurat object from raw scRNA-seq data and initial analyses. |
+| `scRNAseq_part2.Rmd`          | Downstream analyses and visualizations based on the curated Seurat object.          |
+| `scRNAseq_public_dataset.Rmd` | Reanalysis of a publicly available scRNA-seq dataset.                               |
 
-In addition to in-house datasets, this repository also includes the reanalysis of a publicly available scRNA-seq dataset : `scRNAseq_public_dataset.Rmd`
+Raw FASTQ files were processed using Cell Ranger v3.0.1 for demultiplexing, barcode processing, gene counting, and aggregation.
 
-## Prerequisites
+For each experiment, antibody-derived tag (ADT) counts used for cell hashing were quantified using CITE-seq-Count v1.4.1.
 
-To run the scRNA-seq analysis, you need to:
-- Download the Seurat object generated in `scRNAseq_part1.Rmd` (`sickphys_reg.Robj`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
-- Download the Docker image (`seurat500.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
-- Load the Docker image on your system
+# Data Requirements
 
-## Working Directory
+## 1. In-house scRNA-seq Dataset
+
+Files required by `scRNAseq_part2.Rmd`:
+
+| File                |
+| ------------------- |
+| `sickphys_reg.Robj` |
+
+This file contains the curated Seurat object generated in `scRNAseq_part1.Rmd` and allows users to directly reproduce downstream analyses and visualizations.
+
+### Download links
+
+Zenodo: https://doi.org/10.5281/zenodo.18493456
+
+## 2. Public scRNA-seq Dataset
+
+Files required by `scRNAseq_public_dataset.Rmd`:
+
+| File           |
+| -------------- |
+| `Dataset2.rds` |
+
+Source: https://doi.org/10.5281/zenodo.19002805
+
+# Installation
+
+## Clone the Repository
 
 ```bash
-# set your working directory
+git clone https://github.com/JulienRey1/CD9
+```
+
+## Define the Working Directory
+
+```bash
 export WORKING_DIR=/workspace/CD9
 ```
 
-## Download Public Dataset
+# Docker Environment
 
-The public dataset can be downloaded using the following commands:
-```bash
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/19002805/files/Dataset2.rds
-```
+The Docker image below is required to reproduce the analyses:
 
-## Docker image
+| Image       | Purpose                      |
+| ----------- | ---------------------------- |
+| `seurat500` | Single-cell RNA-seq analyses |
 
-> [!WARNING]
-> To reproduce the downstream analysis, you must load the provided Docker image.
-> Docker must be installed on your system.
-> See https://docs.docker.com/install/ for installation instructions.
+## Download Docker Image
 
-### Download the Docker image
 ```bash
 wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/seurat500.tar
 ```
-### Load the Docker image
+
+## Load Docker Image
+
 ```bash
 docker load --input $WORKING_DIR/Container/seurat500.tar
 ```
-### Run the Docker container
+
+## Start Container
+
 ```bash
 docker run -d --name seurat500 -p 9292:8787 -v $WORKING_DIR:/workspace seurat500
 ```
-Once the container is running, the analysis environment can be accessed through a web browser:  
-http://localhost:9292/
+
+# Access RStudio
+
+Once the container is running, access the analysis environment through your browser:
+
+### Single-cell RNA-seq analysis
+
+http://localhost:9292

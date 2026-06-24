@@ -20,8 +20,8 @@ library(dplyr)
 # PATH
 WORKDIR <- "/yourWorkDir/"
 
-INPUT_PATH  <- paste0(WORKDIR, "/Data/")
-OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
 ```
 
 # Data loading

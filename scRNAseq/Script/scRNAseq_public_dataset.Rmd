@@ -31,8 +31,8 @@ pal <- viridis::rocket(20, direction = -1)
 
 WORKDIR <- "/yourWorkDir/"
 
-INPUT_PATH  <- paste0(WORKDIR, "/Data/")
-OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
 ```
 
 # Data
@@ -42,10 +42,12 @@ dataset2 <- readRDS(file = paste0(INPUT_PATH, "Dataset2.rds"))
 dataset2 <- UpdateSeuratObject(dataset2)
 ```
 
-# Umap
+# Figure 2-A
+## Umap
 
 ```{r}
 pPlot <- DimPlot(dataset2, group.by = "orig.ident")+ggtitle("Dataset2")
+pPlot
 
 # ggsave(plot = pPlot,
 #        filename = "DNenriched_umap.pdf",
@@ -58,6 +60,7 @@ pPlot <- DimPlot(dataset2, group.by = "orig.ident")+ggtitle("Dataset2")
 dataset2$RNA_snn_res.0.42 <- factor(dataset2$RNA_snn_res.0.42, levels = c(4, 1, 2, 5, 0, 8, 3, 6, 7))
 
 pPlot <- DimPlot(dataset2, group.by = "RNA_snn_res.0.42")+ggtitle("Dataset2")
+pPlot
 
 # ggsave(plot = pPlot,
 #        filename = "clusters0.42_umap.pdf",
@@ -68,6 +71,7 @@ pPlot <- DimPlot(dataset2, group.by = "RNA_snn_res.0.42")+ggtitle("Dataset2")
 #        units = "px")
 
 pPlot <- DimPlot(dataset2, group.by = "Phase")+ggtitle("Dataset2")
+pPlot
 
 # ggsave(plot = pPlot,
 #        filename = "cycle_umap.pdf",
@@ -82,6 +86,7 @@ pPlot <- DimPlot(dataset2, group.by = "Phase")+ggtitle("Dataset2")
 
 ```{r}
 pPlot <- FeaturePlot(dataset2, features = c("Cd9", "Kit", "S1pr1", "Itgb7", "Cd44", "Il2ra"), order = TRUE)&scale_colour_gradientn(colors = pal)
+pPlot
 
 # ggsave(plot = pPlot,
 #        filename = "featureplot.png",
@@ -92,7 +97,8 @@ pPlot <- FeaturePlot(dataset2, features = c("Cd9", "Kit", "S1pr1", "Itgb7", "Cd4
 #        units = "px")
 ```
 
-# Clustering
+# Figure 2-B
+## Clustering
 
 ```{r}
 DimPlot(dataset2, group.by = "RNA_snn_res.0.42", label = TRUE)+ggtitle("Dataset2")
@@ -135,6 +141,7 @@ dataset2$annotation <- case_when(
 dataset2$annotation <- factor(dataset2$annotation, levels = c("DN1-DN2", "DN3a", "DN3b-DN4", "ISP-DPblast", "DPsmall", "DP69", "CD4SP", "CD8SP", "Tgd"))
 
 pPlot <- DimPlot(dataset2, group.by = "annotation")+ggtitle("Dataset2")
+pPlot
 
 # ggsave(plot = pPlot,
 #        filename = "annotate_umap.pdf",
@@ -145,7 +152,8 @@ pPlot <- DimPlot(dataset2, group.by = "annotation")+ggtitle("Dataset2")
 #        units = "px")
 ```
 
-# DotPlot
+# Figure 2-C
+## DotPlot
 
 ```{r}
 genes <- c("Kit", "Cd44", "Ptcra", "Il2ra", "Tcrg-C1", "Pcna", "Mki67", "Cdk1", "Trbc1", "Rag1", "Tcf7", "Cd4", "Cd8a", "Cd8b1", "Cd5", "Cd69", "Trac", "Itgb7", "S1pr1", "Nkg7", "Trdc", "Blk", "Cd9")

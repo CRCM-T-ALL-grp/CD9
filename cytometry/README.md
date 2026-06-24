@@ -1,55 +1,78 @@
-# Flow Cytometry analysis
+# Flow Cytometry Analysis
 
 ## Overview
 
-This repository contains the code used to analyze flow cytometry data.
+This directory contains the code used for flow cytometry analyses performed in this project.
 
-## Prerequisites
+The analysis workflow is provided in:
 
-To run the flow cytometry script analysis, you need to:
-- Download the datasets hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
-- Download the Docker image (`seurat500.tar`) hosted on [Zenodo](https://doi.org/10.5281/zenodo.18493456)
-- Load the Docker image on your system
+| Script                     | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `migration_versus_CD9.Rmd` | Analysis and visualization of flow cytometry datasets. |
 
-## Working Directory
+# Data Requirements
+
+## Flow Cytometry Datasets
+
+Files required by `migration_versus_CD9.Rmd`:
+
+| File                     |
+| ------------------------ |
+| `PDX11_top.csv`          |
+| `PDX11_bottom.csv`       |
+| `PDX65_top.csv`          |
+| `PDX65_bottom.csv`       |
+| `PDX65_top_noC12.csv`    |
+| `PDX65_bottom_noC12.csv` |
+
+### Download links
+
+Zenodo: https://doi.org/10.5281/zenodo.18493456
+
+# Installation
+
+## Clone the Repository
 
 ```bash
-# set your working directory
+git clone https://github.com/JulienRey1/CD9
+```
+
+## Define the Working Directory
+
+```bash
 export WORKING_DIR=/workspace/CD9
 ```
 
-## Download datas
+# Docker Environment
 
-The datas can be downloaded using the following commands:
-```bash
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/Dataset2.rds
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX11_top.csv
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX11_bottom.csv
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX65_top.csv
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX65_bottom.csv
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX65_top_noC12.csv
-wget -P $WORKING_DIR/Data/ https://zenodo.org/records/18493456/files/PDX65_bottom_noC12.csv
-```
+The Docker image below is required to reproduce the analyses:
 
-## Docker image
+| Image       | Purpose                 |
+| ----------- | ----------------------- |
+| `seurat500` | Flow cytometry analyses |
 
-> [!WARNING]
-> To reproduce the downstream analysis, you must load the provided Docker image.
-> Docker must be installed on your system.
-> See https://docs.docker.com/install/ for installation instructions.
+## Download Docker Image
 
-### Download the Docker image
 ```bash
 wget -P $WORKING_DIR/Container/ https://zenodo.org/records/18493456/files/seurat500.tar
 ```
-### Load the Docker image
+
+## Load Docker Image
+
 ```bash
 docker load --input $WORKING_DIR/Container/seurat500.tar
 ```
-### Run the Docker container
+
+## Start Container
+
 ```bash
 docker run -d --name seurat500 -p 9292:8787 -v $WORKING_DIR:/workspace seurat500
 ```
-Once the container is running, the analysis environment can be accessed through a web browser:  
-http://localhost:9292/
 
+# Access RStudio
+
+Once the container is running, access the analysis environment through your browser:
+
+### Flow Cytometry Analysis
+
+http://localhost:9292

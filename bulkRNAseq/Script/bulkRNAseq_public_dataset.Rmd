@@ -1,0 +1,326 @@
+---
+title: "TCGA"
+author: "Julien REY"
+output:
+  html_document:
+    code_folding: hide
+    code_download: true
+editor_options: 
+  chunk_output_type: console
+---
+
+########################
+Made for docker rna431-2
+########################
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Library
+
+```{r env_loading, include=FALSE}
+install.packages("mclust")
+library(mclust)
+
+library(DESeq2)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+
+library(survival)
+
+WORKDIR <- "/yourWorkDir/"
+
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
+
+# Set the random number seed
+set.seed(1234)
+```
+
+# TCGA
+## Datas
+
+```{r}
+clinical_matrix_TARGET_TALL <- readRDS(file = paste0(INPUT_PATH, "Clinical_matrix_TARGET_TALL_convert.rds"))
+RNA_matrix_TARGET_TALL <- readRDS(paste0(INPUT_PATH, "RNA_matrix_TARGET_TALL_convert.rds"))
+
+# Clinical annotation
+table(clinical_matrix_TARGET_TALL$detailed_class)
+
+# Check of the patient ID between the two matrix
+identical(rownames(clinical_matrix_TARGET_TALL), colnames(RNA_matrix_TARGET_TALL))
+```
+
+   HOXA LYL/LMO TAL/LMO     TLX 
+     33      18     105      86 
+     
+## Normalisation with DESeq2
+
+```{r}
+TARGET_DESeqTALL <- DESeqDataSetFromMatrix(countData=RNA_matrix_TARGET_TALL, 
+                              colData=clinical_matrix_TARGET_TALL, 
+                              design= ~ detailed_class)
+
+TARGET_DESeqTALL <- DESeq(TARGET_DESeqTALL)
+```
+
+# Figure 4-D
+### Violin Plot TARGET P2
+
+```{r}
+vsdataTALL <- vst(TARGET_DESeqTALL, blind=FALSE)
+mat_vst <- assay(vsdataTALL)
+
+cd9_expr <- mat_vst["CD9", ]
+
+df_cd9 <- data.frame(
+  sample = colnames(mat_vst),
+  expression = as.numeric(cd9_expr),
+  detailed_class = clinical_matrix_TARGET_TALL$detailed_class
+)
+
+# Regroup samples from HOXA, LYL/LMO & TLX into one group to compare to Tal/LMO
+df_cd9$group_compare <- ifelse(df_cd9$detailed_class == "TAL/LMO", "TAL/LMO", "HOXA-LYL/LMO-TLX")
+
+df_cd9.mean <- df_cd9 %>%
+  group_by(group_compare) %>%
+  summarise(mean_expression = mean(expression, na.rm = TRUE))
+
+df_cd9. <- df_cd9 %>%
+  group_by(group_compare) %>%
+  summarise(
+    mean_expression = mean(expression, na.rm = TRUE),
+    median_expression = median(expression, na.rm = TRUE),
+    Q1 = quantile(expression, 0.25, na.rm = TRUE),
+    Q3 = quantile(expression, 0.75, na.rm = TRUE),
+    sd_expression = sd(expression, na.rm = TRUE)
+  )
+
+stat.test <- wilcox.test(df_cd9$expression[df_cd9$group_compare == "TAL/LMO"], df_cd9$expression[df_cd9$group_compare == "HOXA-LYL/LMO-TLX"])
+
+y_max <- max(df_cd9$expression)
+y_bar <- y_max + 1.5
+y_text <- y_max + 1.8
+
+# Indices of the groups to be compared
+x1 <- 1  # TAL/LMO
+x2 <- 2  # HOXA-LYL/LMO-TLX
+
+pPlot <- ggplot(df_cd9, aes(x = group_compare, y = expression, fill = group_compare)) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.1, outlier.shape = NA, show.legend = FALSE) +
+  geom_jitter(width = 0.2, size = 1, show.legend = FALSE) +
+  scale_fill_manual(values = c("#ffffffff", "#2ad4ffff")) +
+  
+  # Horizontal bar between the two groups
+  geom_segment(aes(x = x1, xend = x2, y = y_bar, yend = y_bar), inherit.aes = FALSE) +
+  geom_segment(aes(x = x1, xend = x1, y = y_bar, yend = y_bar - 0.1), inherit.aes = FALSE) +
+  geom_segment(aes(x = x2, xend = x2, y = y_bar, yend = y_bar - 0.1), inherit.aes = FALSE) +
+  
+  # Add p-value
+  geom_text(aes(x = (x1 + x2)/2,
+                y = y_text,
+                label = format.pval(stat.test$p.value, digits = 3, scientific = TRUE)),
+            inherit.aes = FALSE) +
+  
+  theme_classic() +
+  labs(
+    title = "CD9 expression across T-ALL subtypes",
+    x = NULL,
+    y = "CD9 Expression",
+    fill = NULL
+  )
+
+pPlot
+
+# ggsave(plot = pPlot,
+#        filename = "TCGA_violinplot.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1600,
+#        height = 1750,
+#        dpi = 170,
+#        units = "px")
+```
+
+# TALL X01
+## Datas
+
+```{r}
+load(paste0(INPUT_PATH, "TALL_X01_FeatureMatrix_genomics_subtype.Rdata"))
+
+ST1_Clinical_Data <- read_xlsx(paste0(INPUT_PATH, "NIHMS2036708-supplement-Supplementary_Tables.xlsx"), sheet = "ST1_Clinical_Data")
+ST3_Sample_Annotations <- read_xlsx(paste0(INPUT_PATH, "NIHMS2036708-supplement-Supplementary_Tables.xlsx"), sheet = "ST3_Sample_Annotations")
+
+expr_vst <- read.table(paste0(INPUT_PATH, "TALL_X01_vst.tsv"), header = TRUE, sep = "\t")
+annotation_vst <- read.table(paste0(INPUT_PATH, "TALL_X01_gene_annotations_unfiltered.tsv"), header = TRUE, sep = "\t")
+
+cd9_row <- expr_vst[expr_vst$geneSymbol == "CD9", ]
+cd9_expr <- cd9_row[, !(colnames(cd9_row) %in% c("X", "geneSymbol"))]
+cd9_expr <- cd9_expr[1, ]
+```
+
+## CD9- CD9+
+
+### Mclust 2 group
+
+```{r}
+#----- Force G=2 mclust -----#
+df_cd9 <- data.frame(
+  sample = colnames(cd9_expr),
+  expression = as.numeric(cd9_expr)
+)
+
+model_auto <- Mclust(df_cd9$expression, G = 2)
+summary(model_auto)
+
+df_cd9$cluster <- model_auto$classification
+```
+
+# Figure 4-H
+#### ViolinPlot
+
+```{r}
+df_cd9$CD9_group <- factor(
+  df_cd9$CD9_group,
+  levels = c("CD9low", "CD9medhigh")
+)
+
+wilcox.test(df_cd9$expression[df_cd9$CD9_group == "CD9low"], df_cd9$expression[df_cd9$CD9_group == "CD9medhigh"])
+# p-value < 2.2e-16
+
+pPlot <- ggplot(df_cd9, aes(x = CD9_group, y = expression, fill = CD9_group)) +
+  
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.1, outlier.shape = NA) +
+  geom_jitter(width = 0.15, size = 0.8) +
+  
+  scale_fill_manual(values = c("#1bcd39ff", "#e83725ff")) +
+  theme_classic() +
+  
+  labs(
+    title = "CD9 expression by mclust cluster",
+    x = NULL,
+    y = "CD9 Expression (VST)",
+    fill = NULL
+  )
+pPlot
+
+# ggsave(plot = pPlot,
+#        filename = "CD9pos_CD9neg_violinplot.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1600,
+#        height = 1750,
+#        dpi = 170,
+#        units = "px")
+```
+
+#### Survivability
+
+```{r}
+km_fit <- survfit(Surv(OS, OS.status) ~ cluster, data=df_cd9)
+
+test <- survdiff(Surv(OS, OS.status) ~ cluster, data = df_cd9)
+
+pval <- 1 - pchisq(test$chisq, length(test$n) - 1)
+pval
+
+# > pval
+# [1] 0.08380068
+
+# km_fit$strata
+# cluster=1 cluster=2 
+#       494       687 
+
+# pdf(paste0(OUTPUT_PATH, "survie_CD9.pdf"), width = 7, height = 6)
+
+plot(
+  km_fit,
+  col = c("#1bcd39ff", "#e83725ff"),
+  lwd = 2,
+  ylim = c(0.7, 1),
+  mark.time = TRUE,
+  xlab = "Time (days)",
+  ylab = "Survival probability",
+  main = "Overall survival according to CD9"
+)
+
+legend(
+  "bottomleft",
+  legend = c("CD9low", "CD9medhigh"),
+  col = c("#1bcd39ff", "#e83725ff"),
+  lty = 1,
+  lwd = 2
+)
+
+# dev.off()
+```
+
+# Figure 4-D
+## TAL1 vs Other
+
+```{r}
+tal1 <- ST3_Sample_Annotations$sample[ST3_Sample_Annotations$Reviewed.subtype == "TAL1 DP-like" | ST3_Sample_Annotations$Reviewed.subtype == "TAL1 αβ-like"]
+length(tal1)
+
+df_cd9 <- data.frame(
+  sample = colnames(cd9_expr),
+  expression = as.numeric(cd9_expr)
+)
+
+df_cd9$CD9_group <- ifelse(df_cd9$sample %in% tal1, "TAL1", "Other")
+```
+
+```{r}
+df_cd9$OS.status <- ST1_Clinical_Data$OS.status[ST1_Clinical_Data$USI %in% df_cd9$sample]
+df_cd9$OS <- ST1_Clinical_Data$OS[ST1_Clinical_Data$USI %in% df_cd9$sample]
+
+df_cd9$CD9_group <- factor(
+  df_cd9$CD9_group,
+  levels = c("Other", "TAL1")
+)
+```
+
+### ViolinPlot
+
+```{r}
+# # Post-hoc (toutes les paires)
+# pairwise_res <- pairwise.wilcox.test(
+#   df_cd9$expression,
+#   df_cd9$CD9_group,
+#   p.adjust.method = "fdr"
+# )
+# 
+# pairwise_res
+# #       TAL1 
+# # Other 5e-11
+
+wilcox.test(df_cd9$expression[df_cd9$CD9_group == "TAL1"], df_cd9$expression[df_cd9$CD9_group == "Other"])
+# p-value = 4.999e-11
+
+pPlot <- ggplot(df_cd9, aes(x = CD9_group, y = expression, fill = CD9_group)) +
+  
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.1, outlier.shape = NA) +
+  geom_jitter(width = 0.15, size = 0.8) +
+
+  scale_fill_manual(values = c("#ffffffff", "#2ad4ffff")) +
+  theme_classic() +
+  
+  labs(
+    title = "CD9 expression by mclust cluster - Total - TAL1 vs Other",
+    x = NULL,
+    y = "CD9 Expression (VST)",
+    fill = NULL
+  )
+pPlot
+
+# ggsave(plot = pPlot,
+#        filename = "TAL1_Other_violinplot.pdf",
+#        path = OUTPUT_PATH,
+#        width = 1600,
+#        height = 1750,
+#        dpi = 170,
+#        units = "px")
+```

@@ -38,8 +38,8 @@ names(palette22) <- c(0:22)
 
 WORKDIR <- "/yourWorkDir/"
 
-INPUT_PATH  <- paste0(WORKDIR, "/Data/")
-OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
 
 # Set the random number seed
 set.seed(1234)
@@ -55,7 +55,8 @@ seurat <- sickphys_subset_reg
 rm(sickphys_subset_reg)
 ```
 
-# UMAP Clustering
+# Figure 1-B
+## UMAP Clustering
 
 ```{r}
 seurat <- FindClusters(seurat, random.seed = 1234, resolution = 2, verbose = FALSE)
@@ -157,6 +158,7 @@ pVolcanoPlot
 #        units = "px")
 ```
 
+# Figure 1-C
 ## Annotation
 
 ```{r}
@@ -196,6 +198,7 @@ pDotPlot
 #        bg = "white")
 ```
 
+# Figure 1-F
 ## Dotplot CD9+ vs CD9- tumoral
 
 ```{r}
@@ -274,7 +277,7 @@ pDotPlot
 #          units = "px")
 ```
 
-## GO enrichment
+# GO enrichment
 
 ```{r}
 markers.filter <- markers %>% dplyr::filter(p_val_adj < 1e-5, abs(avg_log2FC) > 1, pct.1 > 0.25)

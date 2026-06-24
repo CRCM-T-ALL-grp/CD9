@@ -13,13 +13,13 @@ PMID:
 Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 -->
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
-
 [![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
 
 ---
 ### Overview
-This repository contains the code and resources used to perform bioinformatic analyses of single-cell, bulk RNA-seq datasets and flow cytometry, with a focus on downstream statistical analysis and visualization starting from count matrices.
+This repository contains the code used to perform bioinformatic analyses of single-cell, bulk RNA-seq datasets and flow cytometry, with a focus on downstream statistical analysis and visualization starting from count matrices.
 
 The analyses are organized into three main parts:
 

@@ -23,8 +23,8 @@ library(remotes)
 
 WORKDIR <- "/yourWorkDir/"
 
-INPUT_PATH  <- paste0(WORKDIR, "/Data/")
-OUTPUT_PATH = paste0(WORKDIR, "/Output/")
+INPUT_PATH  <- paste0(WORKDIR, "Data/")
+OUTPUT_PATH = paste0(WORKDIR, "Output/")
 
 # Set the random number seed
 seed=1234
@@ -384,20 +384,28 @@ if(!file.exists(paste0(INPUT_PATH, "sickphys_reg.Robj"))) {
 }
 ```
 
-# FeaturePlot
+# Figure 1-A
+
+```{r}
+DimPlot(sickphys_subset_reg,group.by = "HTO_man", cols = c("#F8766D","#7CAE00","#00BFC4","#C77CFF"))
+```
+
+# Figure 1-E
+## FeaturePlot
 
 ```{r}
 FeaturePlot(sickphys_subset_reg, features = "Cd9", cols = c("gainsboro","moccasin","goldenrod1","orange","red","firebrick4"), pt.size = 1)
 ```
 
-# DGE Ptendel Thymus vs Spleen
+# Figure 1-D
+## DGE Ptendel Thymus vs Spleen
 
 ```{r}
 Idents(sickphys_subset_reg) <- 'HTO_man'
 DGEsick <- FindMarkers(sickphys_subset_reg, ident.1 = "sPten* thymus", ident.2 = "sPten* spleen", logfc.threshold = 0, min.pct = 0)
 ```
 
-# Volcano
+## Volcano
 
 ```{r}
 #volcano plot
