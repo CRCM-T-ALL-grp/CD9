@@ -10,12 +10,12 @@ Authors : Quessada Julie<sup>1,2</sup>, Nozais Mathis<sup>1</sup>, Savey Charlot
 <!--
 PMID:
 
-Link to article : [DOI: xx.xxxx/???.xxxxxxx ](https://???)
+Link to article : DOI: 10.1038/s41417-026-01066-z [DOI: xx.xxxx/???.xxxxxxx ](https://???)
 -->
 
-[![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
+GEO dataset : [![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
+Zenodo : [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18493456.svg)](https://doi.org/10.5281/zenodo.18493456)
 
 ---
 ### Overview
