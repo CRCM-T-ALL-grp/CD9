@@ -7,11 +7,9 @@ Authors : Quessada Julie<sup>1,2</sup>, Nozais Mathis<sup>1</sup>, Savey Charlot
 <sup>1</sup> Aix Marseille Univ, CNRS, INSERM, Institut Paoli-Calmettes, CRCM, Marseille, France <br>
 <sup>2</sup> APHM, Hôpital La Timone, Laboratoire d'Hématologie, Marseille, France
 
-<!--
-PMID:
+PMID:42576053
 
-Link to article : DOI: 10.1038/s41417-026-01066-z [DOI: xx.xxxx/???.xxxxxxx ](https://???)
--->
+Link to article : [DOI: 10.1038/s41417-026-01066-z](https://www.nature.com/articles/s41417-026-01066-z)
 
 GEO dataset : [![Generic badge](https://img.shields.io/badge/GEO-GSE319183-blue.svg)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319183)
 
