@@ -12,6 +12,8 @@ Two analysis workflows are provided:
 | `bulkRNAseq_public_dataset.Rmd` | Analysis of publicly available T-ALL RNA-seq datasets. |
 
 Raw FASTQ files from the in-house cohort were preprocessed using the nf-core/rnaseq pipeline (v3.21.0) with STAR-RSEM as the aligner and default parameters.
+Reference genome : GRCh38 ; Annotation file : Homo_sapiens.GRCh38.113.filtered.gtf
+
 
 Public datasets were obtained from published studies and preprocessed expression matrices available through Zenodo or supplementary material repositories.
 
